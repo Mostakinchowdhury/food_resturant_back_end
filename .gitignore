@@ -1,0 +1,23 @@
+# .gitignore
+.env
+db.sqlite3
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.pot
+*.mo
+*.swp
+*.swo
+*.DS_Store
+*.coverage
+*.mypy_cache/
+*.pytest_cache/
+*.vscode/
+.idea/
+.venv/
+node_modules/
+dist/
+build/
+staticfiles/
+media/
