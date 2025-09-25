@@ -1,9 +1,12 @@
-from .models import Profile,Setting,Tag,Order,Product,Category,Cart,CartItem,ProductReview
+from .models import Profile, Setting, Tag, Order, Product, Category, Cart, CartItem, ProductReview, Address, PromoUsage
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
+
+from .utils import password_reset_email
+
 
 def get_tokens_for_user(user):
     if not user.is_active:
@@ -20,11 +23,38 @@ User = get_user_model()
 
 # serializer for profile model
 
+# subscriber serializer
+from  .models import subscribers
+
+class subscribersserializer(serializers.ModelSerializer):
+    class Meta:
+        model = subscribers
+        fields = ['id', 'email', 'created_at']
+        extra_kwargs = {
+            'email': {'required': True},
+        }
+        read_only_fields = ['created_at']
+
+# adresses serializer
+
+class adressserializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ['id', 'street', 'city','country', 'created_at','profile']
+        read_only_fields = ['created_at']
+        extra_kwargs = {
+            'street': {'required': True},
+            'city': {'required': True},
+            'country': {'required': True},
+        }
+
 class ProfileSerializer(serializers.ModelSerializer):
+    addresses=adressserializer(many=True,read_only=True)
+    id = serializers.IntegerField()
     class Meta:
         model = Profile
         fields = "__all__"
-        read_only_fields = ['user','id']
+        read_only_fields = ['user','id','addresses']
 
 # serializer for setting model
 
@@ -49,21 +79,23 @@ class TagSerializer(serializers.ModelSerializer):
 
 # Product review serializer
 class ProductReviewSerializer(serializers.ModelSerializer):
-    reviewer = serializers.SlugRelatedField(slug_field="email", read_only=True)
+    user = serializers.SlugRelatedField(slug_field="email", read_only=True)
+    product = serializers.SlugRelatedField(slug_field="name", read_only=True)
     class Meta:
         model = ProductReview
-        fields = ['id', 'product', 'reviewer', 'rating', 'comment', 'created_at']
-        read_only_fields = ['id', 'product', 'reviewer', 'created_at']
+        fields = ['id', 'product', 'user', 'rating', 'comment', 'created_at','updated_at']
+        read_only_fields = ['id', 'product', 'user', 'created_at','updated_at']
 
 # serializer for product model
 class ProductSerializer(serializers.ModelSerializer):
     category=serializers.SlugRelatedField(slug_field="name",read_only=True)
     tags=TagSerializer(many=True,read_only=True)
     reviews=ProductReviewSerializer(many=True,read_only=True)
+    added_to_cart_count = serializers.IntegerField(read_only=True)
     class Meta:
         model = Product
-        fields = ['id','category','name','description','price','stock','image','tags','create_at','update_at','reviews','average_rating','review_count']
-        read_only_fields = ['id','category','create_at','update_at','tags','reviews','average_rating','review_count']
+        fields = ['id','category','name','description','price','max_price','stock','image','tags','created_at','update_at','reviews','average_rating','review_count','addedtocard','added_to_cart_count']
+        read_only_fields = ['id','category','create_at','update_at','tags','reviews','average_rating','review_count','addedtocard','added_to_cart_count']
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -76,14 +108,12 @@ class CategorySerializer(serializers.ModelSerializer):
 # serializer for order model
 class OrderSerializer(serializers.ModelSerializer):
     user_email = serializers.SlugRelatedField(source="user", slug_field="email", read_only=True)
-    total_amount = serializers.SerializerMethodField(read_only=True)
-    orderitems_string = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Order
         fields = [
             "id", "user", "user_email", "cart", "status",
             "address", "phone", "ordered_at",
-            "total_amount", "orderitems_string",
+            "total_amount", "orderitems_string","amount"
         ]
         read_only_fields = ['id','user','ordered_at','total_amount','orderitems_string']
 
@@ -96,36 +126,28 @@ class OrderSerializer(serializers.ModelSerializer):
 # CART ITEM SERIALIZER
 class CartItemSerializer(serializers.ModelSerializer):
     product_detail = ProductSerializer(source="product", read_only=True)
-    subtotal = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = CartItem
         fields = [
             "id", "cart", "product", "product_detail",
-            "quantity", "is_checked", "created_at", "subtotal",
+            "quantity", "ischeaked", "added_at", "subtotal",
         ]
-        read_only_fields = ["id", "created_at", "subtotal"]
+        read_only_fields = ["id", "added_at", "subtotal"]
 
 # serializer for cart model
 class CartSerializer(serializers.ModelSerializer):
     user_email = serializers.SlugRelatedField(source="user", slug_field="email", read_only=True)
     items = CartItemSerializer(many=True, read_only=True)
-    total_price = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Cart
-        fields = ["id", "user", "user_email", "items", "created_at", "updated_at", "total_price"]
-        read_only_fields = ["id", "user", "created_at", "updated_at", "total_price"]
+        fields = ["id", "user", "user_email", "items", "created_at", "update_at", "total_price",'total_quantity']
+        read_only_fields = ["id", "user", "created_at", "update_at", "total_price"]
 
     def create(self, validated_data):
         user = self.context["user"]
         return Cart.objects.create(user=user, **validated_data)
-
-
-
-
-
-
 
 
 
@@ -135,19 +157,21 @@ class CartSerializer(serializers.ModelSerializer):
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     password2 = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
-    products=ProductSerializer(many=True,read_only=True)
-    orders=OrderSerializer(many=True,read_only=True)
-    cart=CartSerializer(read_only=True)
-    profile=ProfileSerializer(read_only=True)
-    setting=SettingSerializer(read_only=True)
-    tag=TagSerializer(many=True,read_only=True)
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'password', 'password2','products','orders','cart','profile','setting','tag']
+        fields = ['id', 'email', 'first_name', 'last_name','password','password2','is_staff','is_superuser']
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True},
         }
+    def validate_password(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("This field cannot be blank.")
+        if len(value)<8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+        return value.strip()
+    def validate_password2(self, value):
+        return value.strip()
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
@@ -211,12 +235,12 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
-
+from .utils import password_reset_email
 class ResetPasswordgenaretSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def validate_email(self, value):
-        if not User.objects.get(email=value).exists():
+        if not User.objects.filter(email=value).exists():
             raise serializers.ValidationError("User with this email does not exist")
         return value
     def save(self, **kwargs):
@@ -229,7 +253,8 @@ class ResetPasswordgenaretSerializer(serializers.Serializer):
         reset_link = f"{settings.FRONTEND_URL}/reset-password/{uidb64}/{token}/"
         send_mail(
                 subject="Reset your password",
-                message=f"Click the link to reset your password: {reset_link}",
+                message="Click the link to reset your password",
+                html_message=password_reset_email(reset_link),
                 from_email=f"OrderUK <{settings.EMAIL_HOST_USER}>",
                 recipient_list=[email],
             )
@@ -264,3 +289,42 @@ class setResetPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("The reset link is invalid or has expired")
         except User.DoesNotExist:
             raise serializers.ValidationError("User does not exist")
+
+
+
+
+# promo code / coupe on code serializer
+from .models import PromoCode
+
+class PromoCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PromoCode
+        fields = '__all__'   # চাইলে নির্দিষ্ট ফিল্ড দিতে পারো
+
+class ApplyPromoCodeSerializer(serializers.Serializer):
+    code = serializers.CharField()
+
+    def validate(self, data):
+        request = self.context.get("request")
+        user = request.user
+        code = data.get("code")
+
+        # Promo খুঁজে বের করো
+        try:
+            promo = PromoCode.objects.get(code=code)
+        except PromoCode.DoesNotExist:
+            raise serializers.ValidationError({"code": "Invalid promo code"})
+
+        # Promo valid কিনা check
+        if not promo.is_valid():
+            raise serializers.ValidationError({"code": "Promo code expired or inactive"})
+
+        # usage check
+        usage, _ = PromoUsage.objects.get_or_create(user=user, promo=promo)
+        if usage.used_count >= promo.max_uses_per_user:
+            raise serializers.ValidationError({"code": "You have already used this promo code maximum times"})
+
+        # সব ঠিক থাকলে return
+        data["promo"] = promo
+        data["usage"] = usage
+        return data

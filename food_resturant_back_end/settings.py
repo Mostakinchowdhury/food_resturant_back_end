@@ -17,6 +17,8 @@ from pathlib import Path
 import environ
 import os
 
+from django.conf.global_settings import CSRF_TRUSTED_ORIGINS
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env()
@@ -34,10 +36,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ot#4#i@^-krs*)9+c(20zno#vhh2+ky8%m5faq%@^udc_oyz&@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
+DEBUG = False
 
 # Application definition
 
@@ -51,20 +50,20 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     "corsheaders",
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
 ]
-CORS_ALLOW_ALL_ORIGINS=True
 
 CORS_ALLOW_METHODS = (
     "DELETE",
@@ -203,12 +202,42 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 INSTALLED_APPS += ['django_celery_beat']
 
 
-from celery.schedules import crontab
+# from celery.schedules import crontab
+#
+# CELERY_BEAT_SCHEDULE = {
+#     'delete-unverified-every-minute': {
+#         'task': 'api.tasks.delete_old_unverified_users',
+#         'schedule': crontab(minute='*'),  # Runs every minute
+#         'args': (1,),  # No arguments needed for this task
+#     },
+# }
 
-CELERY_BEAT_SCHEDULE = {
-    'delete-unverified-every-minute': {
-        'task': 'api.tasks.delete_old_unverified_users',
-        'schedule': crontab(minute='*'),  # Runs every minute
-        'args': (1,),  # No arguments needed for this task
-    },
-}
+
+# SSLCOMMERZ_STORE_ID variables
+SSLCOMMERZ_STORE_ID=env("SSLCOMMERZ_STORE_ID", default=None)
+SSLCOMMERZ_STORE_PASS=env("SSLCOMMERZ_STORE_PASS", default=None)
+
+STRIPE_SECRET_KEY=env("STRIPE_SECRET_KEY")
+# webhook keys
+STRIPE_WEBHOOK_SECRET=env("STRIPE_WEBHOOK_SECRET", default=None)
+STRIPE_WEBHOOK_ID=env("STRIPE_WEBHOOK_ID", default=None)
+
+# settings.py
+
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "buford-presurgical-anders.ngrok-free.dev","https://food-resturant-front-end-uvgw.vercel.app"]
+
+CORS_ALLOW_ALL_ORIGINS = True  # সব origin allow করবে
+# অথবা চাইলে safe রাখতে পারো
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://buford-presurgical-anders.ngrok-free.dev",
+    "https://food-resturant-front-end-uvgw.vercel.app"
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://buford-presurgical-anders.ngrok-free.dev",
+    "https://food-resturant-front-end-uvgw.vercel.app"
+]

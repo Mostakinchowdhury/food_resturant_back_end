@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
-from .models import Setting,Order,Tag,Profile,Category,Product,ProductReview,Cart,CartItem
+from .models import Setting, Order, Tag, Profile, Category, Product, ProductReview, Cart, CartItem, subscribers, Address,PromoCode,PromoUsage
 
 # Register your models here.
 User=get_user_model()
@@ -12,13 +12,32 @@ except admin.sites.NotRegistered:
 # deafalt register all model except user model
 admin.site.register(Profile)
 admin.site.register(Tag)
-admin.site.register(Order)
 admin.site.register(Setting)
 admin.site.register(Category)
 admin.site.register(Product)
 admin.site.register(ProductReview)
 admin.site.register(Cart)
 admin.site.register(CartItem)
+admin.site.register(subscribers)
+admin.site.register(Address)
+admin.site.register(PromoCode)
+admin.site.register(PromoUsage)
+@admin.register(Order)
+class CustomOrderAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+       'cart',
+    'status',
+    'address',
+   'phone',
+    'is_cashon',
+    'ordered_at',
+    'amount',
+    'orderitems_string'
+    )
+    search_fields = ['id']
+    list_filter = ('status',)
+
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
     list_display = (
@@ -33,7 +52,7 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("is_staff", "is_active", "is_superuser", "groups")
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal Info", {"fields": ("first_name", "last_name")}),
+        ("Personal Info", {"fields": ("first_name", "last_name","is_verified")}),
         ("Permissions", {"fields": ("is_staff", "is_active", "is_superuser", "groups", "user_permissions")}),
     )
     add_fieldsets = (
@@ -58,7 +77,7 @@ class CustomUserAdmin(UserAdmin):
 
     def get_tags(self, obj):
         tags = Tag.objects.filter(tag_author=obj)
-        return ", ".join(tag.tag_name for tag in tags)
+        return ", ".join(tag.name for tag in tags)
     get_tags.short_description = "Tags"
 
 

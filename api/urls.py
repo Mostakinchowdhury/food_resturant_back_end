@@ -1,6 +1,4 @@
-from django.conf import settings
-from django.contrib import admin
-from django.conf.urls.static import static
+
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
@@ -8,7 +6,12 @@ from .views import (
     CategoryViewSet, ProductViewSet, CartViewSet,
     CartItemViewSet, OrderViewSet, ProductReviewViewSet,
     RegisterView, LoginView, ChangePasswordView,
-    PasswordResetRequestView, PasswordResetConfirmView,verify_register_otp
+    PasswordResetRequestView, PasswordResetConfirmView, verify_register_otp, Adressviewset, Subscribersviewset,
+    PromoCodeListCreateView, ApplyPromoCodeView, SSLCommerzCheckoutView, payment_success,
+    payment_fail, payment_cancel, stripe_webhook, wellcome
+)
+from rest_framework_simplejwt.views import (
+     TokenRefreshView,TokenBlacklistView,TokenVerifyView
 )
 app_name = 'api'
 router = DefaultRouter()
@@ -21,6 +24,8 @@ router.register("carts", CartViewSet, basename="carts")
 router.register("cart-items", CartItemViewSet, basename="cart-items")
 router.register("orders", OrderViewSet, basename="orders")
 router.register("reviews", ProductReviewViewSet, basename="reviews")
+router.register("adress", Adressviewset, basename="adress")
+router.register("subscribers", Subscribersviewset, basename="subscribers")
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -33,8 +38,18 @@ urlpatterns = [
     # Password reset
     path("auth/request-reset-password/", PasswordResetRequestView.as_view(), name="request-reset-password"),
     path("auth/reset-password-confirm/", PasswordResetConfirmView.as_view(), name="reset-password-confirm"),
-    path('verify_user_otp/',verify_register_otp.as_view(),name="verify_user_otp"),
+    path('auth/verify_user_otp/',verify_register_otp.as_view(),name="verify_user_otp"),
+    path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path('auth/token/blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
+    path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('promocodes/', PromoCodeListCreateView.as_view(), name='promo-list-create'),
+    path('promocodes/apply/', ApplyPromoCodeView.as_view(), name='promo-apply'),
+    path("sslcommerz-checkout/<int:pk>/", SSLCommerzCheckoutView.as_view()),
+    path('payment/success/',payment_success),
+    path('payment/cancel/',payment_cancel),
+    path('payment/fail/',payment_fail),
+    path('stripe_webhook/',stripe_webhook),
+    path('wellcome/',wellcome),
+
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
