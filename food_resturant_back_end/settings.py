@@ -241,3 +241,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://buford-presurgical-anders.ngrok-free.dev",
     "https://food-resturant-front-end-uvgw.vercel.app"
 ]
+
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
