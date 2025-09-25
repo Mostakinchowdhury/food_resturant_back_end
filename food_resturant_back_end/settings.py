@@ -224,7 +224,7 @@ STRIPE_WEBHOOK_ID=env("STRIPE_WEBHOOK_ID", default=None)
 
 # settings.py
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "buford-presurgical-anders.ngrok-free.dev","https://food-resturant-front-end-uvgw.vercel.app","https://food-resturant-back-end.onrender.com"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "buford-presurgical-anders.ngrok-free.dev","https://food-resturant-front-end-uvgw.vercel.app","https://food-resturant-back-end.onrender.com","food-resturant-back-end.onrender.com"]
 
 CORS_ALLOW_ALL_ORIGINS = True  # সব origin allow করবে
 # অথবা চাইলে safe রাখতে পারো
