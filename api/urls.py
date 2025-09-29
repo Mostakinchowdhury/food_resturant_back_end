@@ -50,6 +50,5 @@ urlpatterns = [
     path('payment/fail/',payment_fail),
     path('stripe_webhook/',stripe_webhook),
     path('wellcome/',wellcome),
-
 ]
 

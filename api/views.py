@@ -523,4 +523,5 @@ def payment_fail(request):
     return HttpResponse("Payment Failed")
 from django.http import HttpResponse
 def wellcome(request):
-    return HttpResponse("wellcome to my backend mostakin")
+    return HttpResponse("welcome i am alive...")
+
