@@ -361,6 +361,12 @@ class PromoUsage(models.Model):
 
 # apply as a rider
 
+APPLY_CHOICE = (
+    ("PENDING", "Pending"),
+    ("CANCELLED", "Cancelled"),
+    ("APPROVED", "Approved")
+)
+
 class ApplyRider(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
@@ -370,9 +376,10 @@ class ApplyRider(models.Model):
     photo = models.ImageField(upload_to=genaretRiderpath, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=50, choices=APPLY_CHOICE, default="PENDING")
 
     def __str__(self):
-        return f"{self.name} - {self.email}"
+        return f"{self.name} - {self.email}-{self.status}"
 
 
 # appy as a buessness owner
@@ -388,8 +395,9 @@ class ApplyBuesnessman(models.Model):
     description = models.TextField(blank=True, null=True)
     buesness_logo=models.ImageField(upload_to=genaretpartnerbuesnesslogopath,null=True,blank=True)
     owner_photo=models.ImageField(upload_to=genaretpartnerpath)
+    status = models.CharField(max_length=50, choices=APPLY_CHOICE, default="PENDING")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} - {self.business_name}"
+        return f"{self.name} - {self.business_name}-{self.status}"
