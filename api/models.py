@@ -86,8 +86,19 @@ def genaretcategorypath(instance,filename):
     # Generate a unique filename using UUID
     uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
     return join("categories",year,month,day,uniqe_filename)
+
+
+#products super category
+
+class Supercategory(models.Model):
+    title=models.CharField(max_length=100,unique=True)
+
+    def __str__(self):
+        return self.title
+
 #product category model
 class Category(models.Model):
+    supercategory=models.ForeignKey(Supercategory,on_delete=models.CASCADE,related_name='category',related_query_name="category",blank=True,null=True)
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to=genaretcategorypath, blank=True, null=True)
@@ -107,7 +118,7 @@ def genaretproductpath(instance,filename):
     uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
     return join("products",year,month,day,uniqe_filename)
 
-def genaretorderpath(instance,filename):
+def genaretRiderpath(instance,filename):
     today=datetime.now()
     year = today.strftime("%Y")
     month = today.strftime("%m")
@@ -115,7 +126,30 @@ def genaretorderpath(instance,filename):
     extension_name=splitext(filename)[1] # Get the file extension
     # Generate a unique filename using UUID
     uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
-    return join("paymend_prove",year,month,day,uniqe_filename)
+    return join("rider_photo",year,month,day,uniqe_filename)
+
+def genaretpartnerpath(instance,filename):
+    today=datetime.now()
+    year = today.strftime("%Y")
+    month = today.strftime("%m")
+    day = today.strftime("%d")
+    extension_name=splitext(filename)[1] # Get the file extension
+    # Generate a unique filename using UUID
+    uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
+    return join("perner_photo",year,month,day,uniqe_filename)
+
+def genaretpartnerbuesnesslogopath(instance,filename):
+    today=datetime.now()
+    year = today.strftime("%Y")
+    month = today.strftime("%m")
+    day = today.strftime("%d")
+    extension_name=splitext(filename)[1] # Get the file extension
+    # Generate a unique filename using UUID
+    uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
+    return join("perner_buesness_logo",year,month,day,uniqe_filename)
+
+
+
 
 # custom product model
 class Product(models.Model):
@@ -125,7 +159,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)  # 999999.99 পর্যন্ত
     max_price = models.DecimalField(max_digits=8, decimal_places=2,null=True,blank=True)  # 999999.99 পর্যন্ত
     stock = models.PositiveIntegerField(default=0)
-    image = models.ImageField(upload_to=genaretproductpath, blank=True, null=True)
+
     tags = models.ManyToManyField(Tag, related_name="products", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
@@ -153,6 +187,16 @@ class Product(models.Model):
         if self.max_price is None:
             self.max_price = self.price
         super().save(*args, **kwargs)
+
+# products images
+class Product_images(models.Model):
+    product=models.ForeignKey(Product,on_delete=models.CASCADE,related_name="productimgs",related_query_name="productimgs")
+    image = models.ImageField(upload_to=genaretproductpath, blank=True, null=True)
+
+    def __str__(self):
+        return f"serials:{self.pk}-{self.product.name}"
+
+
 # custom cart model
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart",related_query_name="cart")
@@ -253,10 +297,6 @@ class Address(models.Model):
         return f"Address for {self.profile.user.first_name} {self.profile.user.last_name}"
 
 
-
-
-
-
 # coupeon/promo code model
 
 from django.db import models
@@ -317,3 +357,39 @@ class PromoUsage(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.promo.code} ({self.used_count} times)"
+
+
+# apply as a rider
+
+class ApplyRider(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    phone_num = models.CharField(max_length=20)
+    working_area_address = models.CharField(max_length=255)
+    permanent_address = models.CharField(max_length=255)
+    photo = models.ImageField(upload_to=genaretRiderpath, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.email}"
+
+
+# appy as a buessness owner
+
+class ApplyBuesnessman(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    phone_num = models.CharField(max_length=20)
+    business_name = models.CharField(max_length=100)
+    business_address = models.CharField(max_length=150)
+    business_type = models.CharField(max_length=100)
+    website = models.URLField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    buesness_logo=models.ImageField(upload_to=genaretpartnerbuesnesslogopath,null=True,blank=True)
+    owner_photo=models.ImageField(upload_to=genaretpartnerpath)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.business_name}"

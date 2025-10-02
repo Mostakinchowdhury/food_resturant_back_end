@@ -1,0 +1,202 @@
+[
+  {
+    "model": "api.customuser",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$6OM4dCCyPAMw3j85IYcBBf$6qFG+UtB4QNeIjRwEcPiicNGuRBztjYa5aFPiBSJ4tQ=",
+      "last_login": "2025-09-29T19:33:52.527Z",
+      "is_superuser": true,
+      "first_name": "Mostakin",
+      "last_name": "Chowdhury",
+      "email": "chowdhurymostakin02@gmail.com",
+      "is_staff": true,
+      "is_active": true,
+      "is_verified": true,
+      "otp_code": null,
+      "otp_expiry": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "api.customuser",
+    "pk": 6,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$y3TvHNX43fB8iYXoV5xQMm$0PZs1m7Ojay9g3e7UEkBmN6rAhHnfwNRgfsnhY9DETA=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "Mostakin",
+      "last_name": "IBN Mohir Ali",
+      "email": "chowdhurymn8@gmail.com",
+      "is_staff": true,
+      "is_active": true,
+      "is_verified": true,
+      "otp_code": null,
+      "otp_expiry": "2025-09-02T19:50:17.885Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "api.customuser",
+    "pk": 10,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$NrkIW8QiuiUw7IShL9d4vD$ZgN9mmFaBO9YavgZPhXtCzK9SanLAdJuUSK+zFMSW2M=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "salauddin",
+      "last_name": "islam",
+      "email": "shalauddins531@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "is_verified": true,
+      "otp_code": null,
+      "otp_expiry": "2025-09-06T18:30:21.580Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "api.customuser",
+    "pk": 14,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$NEhOid78Wbpxj2r3g2GPqG$GRctOuxfB85p2Vv/I11PIFHgTAwobyLu9tt8DfZTMlE=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "return",
+      "last_name": "flow",
+      "email": "returnflowofficial@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "is_verified": true,
+      "otp_code": null,
+      "otp_expiry": "2025-09-06T23:08:34.637Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "api.customuser",
+    "pk": 15,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$JPpv6TOa8S3Jj1Qe7x6WKo$UPQzUrt7X5TSRNyHubVaEp8EhUh8tGhljvw2UK6mbT4=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "monira",
+      "last_name": "chowdhury",
+      "email": "monirachowdhury990@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "is_verified": true,
+      "otp_code": null,
+      "otp_expiry": "2025-09-06T23:16:54.274Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "api.customuser",
+    "pk": 16,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$Z0OnDsSsUeKbpjxDBxpZhn$N+tJlpQ+OfeGjGoUVrZleCjMSAvRVTzOiokHZmshtkc=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "user",
+      "last_name": "num1",
+      "email": "user1@gmail.com",
+      "is_staff": false,
+      "is_active": true,
+      "is_verified": true,
+      "otp_code": "660409",
+      "otp_expiry": "2025-09-10T19:09:15.465Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "api.profile",
+    "pk": 1,
+    "fields": {
+      "user": 16,
+      "phone_num": null,
+      "country": "United kingdom",
+      "bio": null,
+      "gender": "male",
+      "birth_date": null,
+      "profile_image": ""
+    }
+  },
+  {
+    "model": "api.profile",
+    "pk": 2,
+    "fields": {
+      "user": 6,
+      "phone_num": "",
+      "country": "United kingdom",
+      "bio": "",
+      "gender": "male",
+      "birth_date": null,
+      "profile_image": "profiles/2025/09/15/0f36aba0eba544ee991b64e9164464a6.jpg"
+    }
+  },
+  {
+    "model": "api.profile",
+    "pk": 3,
+    "fields": {
+      "user": 1,
+      "phone_num": "+0161179670345",
+      "country": "canada",
+      "bio": "hi",
+      "gender": "male",
+      "birth_date": "2025-09-05",
+      "profile_image": "profiles/2025/09/14/38eb0861aba244dfa84b64d2af1eaec1.png"
+    }
+  },
+  {
+    "model": "api.setting",
+    "pk": 1,
+    "fields": {
+      "user": 16,
+      "theme": "light",
+      "language": "English",
+      "setting_adding_time": "2025-09-10T19:12:33.768Z",
+      "setting_update_time": "2025-09-10T19:12:33.768Z"
+    }
+  },
+  {
+    "model": "api.setting",
+    "pk": 2,
+    "fields": {
+      "user": 6,
+      "theme": "light",
+      "language": "English",
+      "setting_adding_time": "2025-09-10T19:20:53.859Z",
+      "setting_update_time": "2025-09-10T19:20:53.859Z"
+    }
+  },
+  {
+    "model": "api.setting",
+    "pk": 3,
+    "fields": {
+      "user": 1,
+      "theme": "dark",
+      "language": "bangla",
+      "setting_adding_time": "2025-09-10T19:21:01.272Z",
+      "setting_update_time": "2025-09-14T18:48:06.389Z"
+    }
+  },
+  { "model": "api.tag", "pk": 1, "fields": { "name": "Fast Food", "tag_author": 1 } },
+  { "model": "api.tag", "pk": 2, "fields": { "name": "Healthy Meals", "tag_author": 6 } },
+  { "model": "api.tag", "pk": 3, "fields": { "name": "Pizza & Pasta", "tag_author": 1 } },
+  { "model": "api.tag", "pk": 4, "fields": { "name": "Burgers & Sandwiches", "tag_author": 6 } },
+  { "model": "api.tag", "pk": 5, "fields": { "name": "Drinks & Beverages", "tag_author": 6 } },
+  { "model": "api.tag", "pk": 6, "fields": { "name": "Desserts & Ice Creams", "tag_author": 6 } },
+  { "model": "api.tag", "pk": 7, "fields": { "name": "Vegetarian Options", "tag_author": 6 } },
+  { "model": "api.tag", "pk": 8, "fields": { "name": "Seafood Specials", "tag_author": 1 } },
+  { "model": "api.tag", "pk": 9, "fields": { "name": "Combo Meals", "tag_author": 1 } },
+  { "model": "api.tag", "pk": 10, "fields": { "name": "Street Food", "tag_author": 1 } },
+  { "model": "api.tag", "pk": 11, "fields": { "name": "singara", "tag_author": 1 } },
+  { "model": "api.tag", "pk": 12, "fields": { "name": "samusa", "tag_author": 1 } },
+  { "model": "api.tag", "pk": 13, "fields": { "name": "evening food", "tag_author": 6 } },
+  { "model": "api.tag", "pk": 14, "fields": { "name": "singira", "tag_author": 1 } }
+]

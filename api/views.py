@@ -521,7 +521,50 @@ def payment_fail(request):
     order.status = "CANCELLED"
     order.save()
     return HttpResponse("Payment Failed")
+
+
 from django.http import HttpResponse
+from .models import Supercategory,Product_images
+from .serializers import SupercategorySerializer,ProductimgsSerializer
+from .permissions import IsAdminOrReadOnly
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from .models import ApplyRider, ApplyBuesnessman
+from .serializers import ApplyRiderSerializer, ApplyBuesnessmanSerializer
+
+
+# Supercategory view
+class SupercategoryViewSet(viewsets.ModelViewSet):
+    queryset = Supercategory.objects.all()
+    serializer_class = SupercategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+#Product_images view
+
+class Product_imagesViewSet(viewsets.ModelViewSet):
+    queryset = Product_images.objects.all()
+    serializer_class = ProductimgsSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+
+
+
+# apply rider and buesness viewset
+
+# ApplyRider ViewSet
+class ApplyRiderViewSet(viewsets.ModelViewSet):
+    queryset = ApplyRider.objects.all()
+    serializer_class = ApplyRiderSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+# ApplyBuesnessman ViewSet
+class ApplyBuesnessmanViewSet(viewsets.ModelViewSet):
+    queryset = ApplyBuesnessman.objects.all()
+    serializer_class = ApplyBuesnessmanSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+# wellcome view
+
 def wellcome(request):
     return HttpResponse("welcome i am alive...")
 

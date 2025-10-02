@@ -198,19 +198,6 @@ REST_FRAMEWORK = {
 FRONTEND_URL= env("FRONTEND_URL", default="http://localhost:3000")
 
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-INSTALLED_APPS += ['django_celery_beat']
-
-
-# from celery.schedules import crontab
-#
-# CELERY_BEAT_SCHEDULE = {
-#     'delete-unverified-every-minute': {
-#         'task': 'api.tasks.delete_old_unverified_users',
-#         'schedule': crontab(minute='*'),  # Runs every minute
-#         'args': (1,),  # No arguments needed for this task
-#     },
-# }
 
 
 # SSLCOMMERZ_STORE_ID variables

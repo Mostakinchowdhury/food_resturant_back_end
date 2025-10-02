@@ -86,10 +86,21 @@ class ProductReviewSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'user', 'rating', 'comment', 'created_at','updated_at']
         read_only_fields = ['id', 'product', 'user', 'created_at','updated_at']
 
+
+
+# serializer for products image
+from .models import Product_images,Supercategory
+class ProductimgsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Product_images
+        fields="__all__"
+        read_only_fields=['id',]
+
 # serializer for product model
 class ProductSerializer(serializers.ModelSerializer):
     category=serializers.SlugRelatedField(slug_field="name",read_only=True)
     tags=TagSerializer(many=True,read_only=True)
+    productimgs=ProductimgsSerializer(many=True,read_only=True)
     reviews=ProductReviewSerializer(many=True,read_only=True)
     added_to_cart_count = serializers.IntegerField(read_only=True)
     class Meta:
@@ -98,12 +109,25 @@ class ProductSerializer(serializers.ModelSerializer):
         read_only_fields = ['id','category','create_at','update_at','tags','reviews','average_rating','review_count','addedtocard','added_to_cart_count']
 
 
+
+# category serializer
+
 class CategorySerializer(serializers.ModelSerializer):
     products=ProductSerializer(many=True,read_only=True)
     class Meta:
         model = Category
         fields = "__all__"
         read_only_fields = ['id','products']
+
+# Supercategory serializer
+
+class SupercategorySerializer(serializers.ModelSerializer):
+    category=CategorySerializer(many=True,read_only=True)
+    class Meta:
+        model = Supercategory
+        fields = "__all__"
+        read_only_fields = ['id','category']
+
 
 # serializer for order model
 class OrderSerializer(serializers.ModelSerializer):
@@ -328,3 +352,21 @@ class ApplyPromoCodeSerializer(serializers.Serializer):
         data["promo"] = promo
         data["usage"] = usage
         return data
+
+
+from .models import ApplyRider,ApplyBuesnessman
+# apply as a Bussness and Rider
+
+# Serializer for ApplyRider model
+class ApplyRiderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApplyRider
+        fields = "__all__"
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+# Serializer for ApplyBuesnessman model
+class ApplyBuesnessmanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApplyBuesnessman
+        fields = "__all__"
+        read_only_fields = ['id', 'created_at', 'updated_at']

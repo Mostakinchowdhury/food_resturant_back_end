@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
-from .models import Setting, Order, Tag, Profile, Category, Product, ProductReview, Cart, CartItem, subscribers, Address,PromoCode,PromoUsage
+from .models import Setting, Order, Tag, Profile, Category, Product, ProductReview, Cart, CartItem, subscribers, Address,PromoCode,PromoUsage,Product_images,Supercategory,ApplyRider,ApplyBuesnessman
 
 # Register your models here.
 User=get_user_model()
@@ -22,6 +22,10 @@ admin.site.register(subscribers)
 admin.site.register(Address)
 admin.site.register(PromoCode)
 admin.site.register(PromoUsage)
+admin.site.register(Product_images)
+admin.site.register(Supercategory)
+admin.site.register(ApplyRider)
+admin.site.register(ApplyBuesnessman)
 @admin.register(Order)
 class CustomOrderAdmin(admin.ModelAdmin):
     list_display = (
