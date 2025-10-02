@@ -36,7 +36,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ot#4#i@^-krs*)9+c(20zno#vhh2+ky8%m5faq%@^udc_oyz&@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 # Application definition
 
@@ -93,11 +92,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'food_resturant_back_end.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+DEBUG = env("DEBUG",default="True") == "True"
 
-DATABASES = {
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'food_resturant_db',
+            'USER': 'food_user',
+            'PASSWORD': 'nid1980312092',
+            'HOST': '127.0.0.1',
+            'PORT': '5432',
+        }
+    }
+else:
+    DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": env("DB_NAME"),
@@ -110,7 +121,8 @@ DATABASES = {
             'sslmode': 'require',   # Render DB requires SSL
         },
     }
-}
+   }
+
 
 
 AUTH_USER_MODEL = 'api.CustomUser'
