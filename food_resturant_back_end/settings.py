@@ -54,6 +54,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
@@ -100,11 +101,11 @@ if DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'food_resturant_db',
-            'USER': 'food_user',
-            'PASSWORD': 'nid1980312092',
-            'HOST': '127.0.0.1',
-            'PORT': '5432',
+            'NAME': env("LOCAL_DB_NAME"),
+            'USER': env("LOCAL_DB_USER"),
+            'PASSWORD': env("LOCAL_DB_PASSWORD"),
+            'HOST': env("LOCAL_DB_HOST"),
+            'PORT': env("LOCAL_DB_PORT"),
         }
     }
 else:
