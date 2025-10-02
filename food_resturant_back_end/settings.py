@@ -106,6 +106,9 @@ DATABASES = {
         "HOST": env("DB_HOST", default="127.0.0.1"),
         "PORT": env("DB_PORT", default="5432"),
         "CONN_MAX_AGE": env.int("CONN_MAX_AGE", default=60),
+        'OPTIONS': {
+            'sslmode': 'require',   # Render DB requires SSL
+        },
     }
 }
 
