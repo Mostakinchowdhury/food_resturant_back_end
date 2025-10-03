@@ -583,8 +583,12 @@ def delete_unverified_users(request):
     # ১ ঘন্টার বেশি পুরানো এবং is_verified=False এমন user গুলো খুঁজে বের করা
     cutoff = timezone.now() - timedelta(hours=20)
     unverified_users = User.objects.filter(is_verified=False, updated_at__lt=cutoff).exclude(is_staff=True).exclude(is_superuser=True)
-
+    # apply rider and buesnessman application গুলো ডিলিট করা
+    canceled_rideds=ApplyRider.objects.filter(status="CANCELLED",updated_at__lt=cutoff)
+    canceled_buesnessman=ApplyBuesnessman.objects.filter(status="CANCELLED",updated_at__lt=cutoff)
     # user গুলো delete করা
     count = unverified_users.count()
     unverified_users.delete()
-    return HttpResponse(f"Deleted {count} unverified users.")
+    canceled_rideds.delete()
+    canceled_buesnessman.delete()
+    return HttpResponse(f"Deleted {count} unverified users. Deleted {canceled_rideds.count()} canceled rider record. Deleted {canceled_buesnessman.count()} canceled business record.")

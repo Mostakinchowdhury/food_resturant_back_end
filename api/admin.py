@@ -54,10 +54,11 @@ class CustomUserAdmin(UserAdmin):
     )
     ordering=("email",)
     search_fields = ("email", "first_name", "last_name")
+    readonly_fields = ("created_at","updated_at","otp_code","otp_expiry")
     list_filter = ("is_staff", "is_active", "is_superuser", "groups")
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal Info", {"fields": ("first_name", "last_name","is_verified","otp_code","otp_expiry","created_at","updated_at")}),
+        ("Personal Info", {"fields": ("first_name", "last_name","is_verified",)}),
         ("Permissions", {"fields": ("is_staff", "is_active", "is_superuser", "groups", "user_permissions")}),
     )
     add_fieldsets = (
