@@ -59,6 +59,7 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         ("Personal Info", {"fields": ("first_name", "last_name","is_verified",)}),
+        ("Extra Info", {"fields": ("created_at","updated_at","otp_code","otp_expiry")}),
         ("Permissions", {"fields": ("is_staff", "is_active", "is_superuser", "groups", "user_permissions")}),
     )
     add_fieldsets = (
