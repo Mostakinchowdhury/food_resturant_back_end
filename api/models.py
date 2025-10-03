@@ -7,6 +7,7 @@ from os.path import join,splitext
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import PermissionsMixin
+from django.utils import timezone
 
 User=settings.AUTH_USER_MODEL
 GENDER_CHOICES = (
@@ -25,6 +26,8 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
     is_verified = models.BooleanField(default=False)
     otp_code = models.CharField(max_length=6, blank=True, null=True)
     otp_expiry = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+    updated_at = models.DateTimeField(auto_now=True,null=True,blank=True)
     USERNAME_FIELD="email"
     EMAIL_FIELD="email"
     REQUIRED_FIELDS=["first_name","last_name"]
@@ -249,6 +252,7 @@ class Order(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     currency = models.CharField(max_length=10, default="GBP")
     orderitems_string=models.TextField(blank=True, null=True)
+    seller_shop=models.CharField(max_length=100,default="RBL super shop")
     def __str__(self):
         return f"Order {self.id} - {self.user.first_name} {self.user.last_name} ({self.status})"
 

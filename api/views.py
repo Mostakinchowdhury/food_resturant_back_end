@@ -568,3 +568,23 @@ class ApplyBuesnessmanViewSet(viewsets.ModelViewSet):
 def wellcome(request):
     return HttpResponse("welcome i am alive...")
 
+# cron job for is_verified fail user delete thats hit by uptimerobot
+from django.utils import timezone
+from datetime import timedelta
+from django.http import HttpResponse,HttpResponseForbidden
+from django.contrib.auth import get_user_model
+from django.views.decorators.csrf import csrf_exempt
+User = get_user_model()
+@csrf_exempt
+def delete_unverified_users(request):
+    if not request.method in permissions.SAFE_METHODS:
+        return HttpResponseForbidden("Only SAFE METHODS is allowed.")
+
+    # ১ ঘন্টার বেশি পুরানো এবং is_verified=False এমন user গুলো খুঁজে বের করা
+    cutoff = timezone.now() - timedelta(hours=20)
+    unverified_users = User.objects.filter(is_verified=False, updated_at__lt=cutoff).exclude(is_staff=True).exclude(is_superuser=True)
+
+    # user গুলো delete করা
+    count = unverified_users.count()
+    unverified_users.delete()
+    return HttpResponse(f"Deleted {count} unverified users.")

@@ -8,7 +8,7 @@ from .views import (
     RegisterView, LoginView, ChangePasswordView,
     PasswordResetRequestView, PasswordResetConfirmView, verify_register_otp, Adressviewset, Subscribersviewset,
     PromoCodeListCreateView, ApplyPromoCodeView,SupercategoryViewSet,SSLCommerzCheckoutView,Product_imagesViewSet, payment_success,
-    payment_fail, payment_cancel, stripe_webhook, wellcome
+    payment_fail, payment_cancel, stripe_webhook, wellcome,delete_unverified_users
 )
 from rest_framework_simplejwt.views import (
      TokenRefreshView,TokenBlacklistView,TokenVerifyView
@@ -53,5 +53,7 @@ urlpatterns = [
     path('payment/fail/',payment_fail),
     path('stripe_webhook/',stripe_webhook),
     path('wellcome/',wellcome),
+    # crone job
+    path("cronejob/delete_unverified_users/",delete_unverified_users)
 ]
 
