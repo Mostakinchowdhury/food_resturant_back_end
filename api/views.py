@@ -581,14 +581,14 @@ def delete_unverified_users(request):
         return HttpResponseForbidden("Only SAFE METHODS is allowed.")
 
     # ১ ঘন্টার বেশি পুরানো এবং is_verified=False এমন user গুলো খুঁজে বের করা
-    cutoff = timezone.now() - timedelta(hours=20)
+    cutoff = timezone.now() - timedelta(minutes=5)
     unverified_users = User.objects.filter(is_verified=False, updated_at__lt=cutoff).exclude(is_staff=True).exclude(is_superuser=True)
     # apply rider and buesnessman application গুলো ডিলিট করা
     canceled_rideds=ApplyRider.objects.filter(status="CANCELLED",updated_at__lt=cutoff)
     canceled_buesnessman=ApplyBuesnessman.objects.filter(status="CANCELLED",updated_at__lt=cutoff)
     # user গুলো delete করা
     count = unverified_users.count()
-    if count >0:
+    if count > 0:
       unverified_users.delete()
 
     if canceled_rideds.count()>0:
