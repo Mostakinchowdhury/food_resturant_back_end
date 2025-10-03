@@ -215,6 +215,8 @@ class loginserializer(serializers.Serializer):
   def validate(self, attrs):
      user=authenticate(email=attrs['email'],password=attrs['password'])
      if user is not None:
+       if not user.is_verified:
+            raise serializers.ValidationError("Email is not verified")
        attrs['token']=get_tokens_for_user(user)
      else:
        raise serializers.ValidationError("Your information not match with any record try again")
