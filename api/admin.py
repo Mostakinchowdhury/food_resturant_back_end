@@ -47,6 +47,7 @@ class CustomUserAdmin(UserAdmin):
     list_display = (
         "email",
         "fullname",
+        "is_verified",
         "get_language",
         "order_count",
         "get_tags",
@@ -56,7 +57,7 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("is_staff", "is_active", "is_superuser", "groups")
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal Info", {"fields": ("first_name", "last_name","is_verified")}),
+        ("Personal Info", {"fields": ("first_name", "last_name","is_verified","otp_code","otp_expiry","created_at","updated_at")}),
         ("Permissions", {"fields": ("is_staff", "is_active", "is_superuser", "groups", "user_permissions")}),
     )
     add_fieldsets = (
