@@ -588,7 +588,11 @@ def delete_unverified_users(request):
     canceled_buesnessman=ApplyBuesnessman.objects.filter(status="CANCELLED",updated_at__lt=cutoff)
     # user গুলো delete করা
     count = unverified_users.count()
-    unverified_users.delete()
-    canceled_rideds.delete()
-    canceled_buesnessman.delete()
+    if count >0:
+      unverified_users.delete()
+
+    if canceled_rideds.count()>0:
+     canceled_rideds.delete()
+    if canceled_buesnessman.count()>0:
+      canceled_buesnessman.delete()
     return HttpResponse(f"Deleted {count} unverified users. Deleted {canceled_rideds.count()} canceled rider record. Deleted {canceled_buesnessman.count()} canceled business record.")
