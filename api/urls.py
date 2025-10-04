@@ -2,7 +2,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    ProfileViewSet, SettingViewSet, TagViewSet,
+    ProfileViewSet, SettingViewSet, TagViewSet,OrderItemViewSet,
     CategoryViewSet, ProductViewSet, CartViewSet,
     CartItemViewSet, OrderViewSet, ProductReviewViewSet,
     RegisterView, LoginView, ChangePasswordView,
@@ -30,6 +30,7 @@ router.register("product_images", Product_imagesViewSet, basename="product_image
 router.register("supercategory", SupercategoryViewSet, basename="supercategory")
 router.register("supercategories", SupercategoryViewSet, basename="supercategories")
 router.register("product-images", Product_imagesViewSet, basename="product-images")
+router.register("orderItems", OrderItemViewSet, basename="OrderItemViewSet")
 
 urlpatterns = [
     path("", include(router.urls)),

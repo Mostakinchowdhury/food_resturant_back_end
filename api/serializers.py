@@ -372,3 +372,26 @@ class ApplyBuesnessmanSerializer(serializers.ModelSerializer):
         model = ApplyBuesnessman
         fields = "__all__"
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+
+
+
+# serializer class for orderitem model
+from rest_framework import serializers
+from .models import OrderItem
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.SlugRelatedField(source='product',slug_field="name",read_only=True)
+    class Meta:
+        model = OrderItem
+        fields = [
+            'id',
+            'order',
+            'product',
+            'product_name',
+            'quantity',
+            'price',
+            'added_at',
+            'subtotal',
+        ]

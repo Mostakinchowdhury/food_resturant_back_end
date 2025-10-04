@@ -9,14 +9,14 @@ from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly, IsOwner, onlygeta
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .models import (
     Profile, Setting, Tag, Order, Product,
-    Category, Cart, CartItem, ProductReview, Address
+    Category, Cart, CartItem, ProductReview, Address,OrderItem
 )
 from .serializers import (
     ProfileSerializer, SettingSerializer, TagSerializer,
     OrderSerializer, ProductSerializer, CategorySerializer,
     CartSerializer, CartItemSerializer, UserRegistrationSerializer,
     loginserializer, ChangePasswordSerializer,
-    ResetPasswordgenaretSerializer, setResetPasswordSerializer, ProductReviewSerializer, adressserializer
+    ResetPasswordgenaretSerializer,OrderItemSerializer, setResetPasswordSerializer, ProductReviewSerializer, adressserializer
 )
 import stripe
 from django.conf import settings
@@ -192,7 +192,8 @@ class OrderViewSet(viewsets.ModelViewSet):
             phone=f"{request.data.get('phone')}",
             amount=request.data.get('amount'),
             orderitems_string=",".join(f"{item.product.id}:{item.product.name} x {item.quantity}" for item in
-                                       request.user.cart.items.checked_items())
+                                       request.user.cart.items.checked_items()),
+
         )
         order = get_object_or_404(Order, pk=cash_order.pk)
         checkout_session = stripe.checkout.Session.create(
@@ -212,6 +213,11 @@ class OrderViewSet(viewsets.ModelViewSet):
         )
         cheakeditems=CartItem.objects.checked_items()
         for item in cheakeditems:
+            OrderItem.objects.create(
+                order=cash_order,
+                product=item.product,
+                quantity=item.quantity,
+                price=item.product.price)
             item.delete()
         return Response({"url": checkout_session.url,"messages":"Order is ready for payment"})
     # cash_on_delivery action
@@ -226,14 +232,32 @@ class OrderViewSet(viewsets.ModelViewSet):
             is_cashon=True,
             amount=request.data.get('amount'),
             orderitems_string=",".join(f"{item.product.id}:{item.product.name} x {item.quantity}" for item in
-                                       request.user.cart.items.checked_items())
+                                       request.user.cart.items.checked_items()),
         )
 
         cheakeditems = CartItem.objects.checked_items()
+        # cartitem to orderitem convert and cartitem delete
         for item in cheakeditems:
+            OrderItem.objects.create(
+                order=cash_order,
+                product=item.product,
+                quantity=item.quantity,
+                price=item.product.price)
             item.delete()
         serializer = self.get_serializer(cash_order)
         return Response({'messages':"Order succesfully placed",'result':serializer.data}, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["get"])
+    def Ispercheased(self, request):
+         product_id = request.GET.get("product_id")
+         if not product_id:
+             return Response({"error": "Product ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+         has_purchased = Order.objects.filter(
+             user=request.user,
+             orderitems__product_id=product_id,
+             status__in=['PAIDANDPROCESSING', 'DELIVERED', 'CASHANDPROCESSING']
+         ).exists()
+         return Response({"has_purchased": has_purchased}, status=status.HTTP_200_OK)
 # 🔹 ProductReview ViewSet
 class ProductReviewViewSet(viewsets.ModelViewSet):
     queryset = ProductReview.objects.all()
@@ -596,3 +620,13 @@ def delete_unverified_users(request):
     if canceled_buesnessman.count()>0:
       canceled_buesnessman.delete()
     return HttpResponse(f"Deleted {count} unverified users. Deleted {canceled_rideds.count()} canceled rider record. Deleted {canceled_buesnessman.count()} canceled business record.")
+
+
+
+# orderitems viewset
+class OrderItemViewSet(viewsets.ModelViewSet):
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer
+    permission_classes = [permissions.IsAuthenticated,IsOwner]
+    def get_queryset(self):
+        return self.queryset.filter(order__user=self.request.user)

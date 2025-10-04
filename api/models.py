@@ -260,6 +260,21 @@ class Order(models.Model):
     def total_amount(self):
         return self.cart.total_price
 
+
+# order item model
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="orderitems",related_query_name="orderitems")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    added_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.quantity} × {self.product.name} ({self.order.id})"
+
+    @property
+    def subtotal(self):
+        return self.price * self.quantity
+
 # custom product revew model
 class ProductReview(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews",related_query_name="reviews")
