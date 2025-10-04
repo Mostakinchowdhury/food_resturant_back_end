@@ -105,7 +105,7 @@ class ProductSerializer(serializers.ModelSerializer):
     added_to_cart_count = serializers.IntegerField(read_only=True)
     class Meta:
         model = Product
-        fields = ['id','category','name','description','price','max_price','stock','image','tags','created_at','update_at','reviews','average_rating','review_count','addedtocard','added_to_cart_count']
+        fields = ['id','category','name','description','price','max_price','stock','tags','created_at','update_at','reviews','average_rating','review_count','addedtocard','added_to_cart_count',"productimgs"]
         read_only_fields = ['id','category','create_at','update_at','tags','reviews','average_rating','review_count','addedtocard','added_to_cart_count']
 
 
