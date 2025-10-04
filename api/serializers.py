@@ -113,11 +113,10 @@ class ProductSerializer(serializers.ModelSerializer):
 # category serializer
 
 class CategorySerializer(serializers.ModelSerializer):
-    products=ProductSerializer(many=True,read_only=True)
     class Meta:
         model = Category
-        fields = "__all__"
-        read_only_fields = ['id','products']
+        fields = ["id", "name", "description","image"]
+        read_only_fields = ['id',]
 
 # Supercategory serializer
 
@@ -395,3 +394,27 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'added_at',
             'subtotal',
         ]
+
+
+# orderprovedbyrider serializer
+# serializers.py
+
+from rest_framework import serializers
+from .models import OrderProvedByRider, Order, ApplyRider
+
+class OrderProvedByRiderSerializer(serializers.ModelSerializer):
+    rider_name = serializers.SlugRelatedField(source='rider', slug_field='name', read_only=True)
+    class Meta:
+        model = OrderProvedByRider
+        fields = [
+            'id',
+            'order',
+            'rider',
+            'rider_name',
+            'proved_image',
+            'proved_video',
+            'status',
+            'proved_at'
+        ]
+        read_only_fields = ['proved_at']  # proved_at auto_now_add
+

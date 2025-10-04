@@ -103,8 +103,8 @@ def generate_msg_html(instance):
             <p>Use this coupon code on your first order: <strong>WellcomeorderUK20</strong> — and claim <strong>20% discount</strong>!</p>
             <p>Need help? Contact us: <a href="mailto:{settings.EMAIL_HOST_USER}">{settings.EMAIL_HOST_USER}</a></p>
             <div class="footer">
-                &copy; {datetime.now().strftime('%Y')} OrderUK | 
-                <a href="{settings.FRONTEND_URL}/privacy">Privacy Policy</a> | 
+                &copy; {datetime.now().strftime('%Y')} OrderUK |
+                <a href="{settings.FRONTEND_URL}/privacy">Privacy Policy</a> |
                 <a href="{settings.FRONTEND_URL}/terms">Terms & Conditions</a>
             </div>
             <div class="footer">
@@ -200,3 +200,90 @@ def password_reset_email(link):
     </body>
     </html>
     """
+
+
+# orders confirm email
+
+# utils/email_templates.py
+def order_confirmation_email(user_first_name, order_id, otp_code, rider_name):
+    return f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Order Confirmation</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 50px auto;
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }}
+            h2 {{
+                color: #333333;
+            }}
+            p {{
+                font-size: 16px;
+                color: #555555;
+            }}
+            .otp {{
+                font-size: 24px;
+                font-weight: bold;
+                color: #2E86C1;
+                margin: 20px 0;
+            }}
+            .footer {{
+                margin-top: 30px;
+                font-size: 14px;
+                color: #999999;
+            }}
+            .btn {{
+                display: inline-block;
+                padding: 10px 20px;
+                margin-top: 20px;
+                background-color: #2E86C1;
+                color: #ffffff;
+                text-decoration: none;
+                border-radius: 5px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Hello {user_first_name},</h2>
+            <p>Thank you for placing an order with us! Your Order ID is <strong>{order_id}</strong>.</p>
+
+            <p>Please use the following OTP to confirm your order receipt:</p>
+            <div class="otp">{otp_code}</div>
+
+            <p>Once you receive your order, our rider <strong>{rider_name}</strong> will verify the delivery and upload proof.</p>
+
+            <a href="#" class="btn">Track Your Order</a>
+
+            <p class="footer">
+                This is an automated email, please do not reply. <br>
+                &copy; 2025 Food Restaurant
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+# send order confirm email to user using send_mail function
+def send_order_confirmation_email(user, order_id, otp_code, rider_name):
+    subject = "Your Order Confirmation"
+    message = f"Your order {order_id} has been placed. Use OTP {otp_code} to confirm receipt."
+    send_mail(
+        subject=subject,
+        message=message,
+        html_message=order_confirmation_email(user.first_name, order_id, otp_code, rider_name),
+        from_email=f"OrderUK <{settings.EMAIL_HOST_USER}>",
+        recipient_list=[user.email],
+    )

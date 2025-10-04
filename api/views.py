@@ -169,6 +169,9 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
 
 # 🔹 Order ViewSet
+from .utils import send_order_confirmation_email,generate_otp
+from threading import Thread
+
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
@@ -258,6 +261,27 @@ class OrderViewSet(viewsets.ModelViewSet):
              status__in=['PAIDANDPROCESSING', 'DELIVERED', 'CASHANDPROCESSING']
          ).exists()
          return Response({"has_purchased": has_purchased}, status=status.HTTP_200_OK)
+    @action(detail=False, methods=["get"])
+    def send_order_otp(self,request):
+        order_id = request.GET.get("order_id")
+        if not order_id:
+            return Response({"error": "Order ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+         order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+           return Response({"error": "Order not found try again"}, status=status.HTTP_404_NOT_FOUND)
+        if order.status not in ['PAIDANDPROCESSING', 'CASHANDPROCESSING']:
+            return Response({"error": "OTP can only be sent for orders that status are PAIDANDPROCESSING or CASHANDPROCESSING."}, status=status.HTTP_400_BAD_REQUEST)
+        if order.order_rider is None:
+            return Response({"error": "Rider is not assigned yet, please wait until rider assigned"}, status=status.HTTP_400_BAD_REQUEST)
+        if order.order_rider.user != request.user:
+            return Response({"error": "You are not authorized to send OTP for this order"}, status=status.HTTP_403_FORBIDDEN)
+        otp=generate_otp()
+        order.order_otp=otp
+        order.otp_expiry=timezone.now()+timezone.timedelta(days=5)
+        # user, order_id, otp_code, rider_name
+        Thread(target=send_order_confirmation_email, args=[order.user, order.pk, otp,request.user]).start()
+        return Response({"message": "A new OTP has been sent to your email. Check it and fill in the OTP input."}, status=status.HTTP_200_OK)
 # 🔹 ProductReview ViewSet
 class ProductReviewViewSet(viewsets.ModelViewSet):
     queryset = ProductReview.objects.all()
@@ -606,10 +630,20 @@ def delete_unverified_users(request):
 
     # ১ ঘন্টার বেশি পুরানো এবং is_verified=False এমন user গুলো খুঁজে বের করা
     cutoff = timezone.now() - timedelta(minutes=5)
+    cutofffordeleverprofe=timezone.now()-timedelta(days=5)
     unverified_users = User.objects.filter(is_verified=False, updated_at__lt=cutoff).exclude(is_staff=True).exclude(is_superuser=True)
     # apply rider and buesnessman application গুলো ডিলিট করা
     canceled_rideds=ApplyRider.objects.filter(status="CANCELLED",updated_at__lt=cutoff)
     canceled_buesnessman=ApplyBuesnessman.objects.filter(status="CANCELLED",updated_at__lt=cutoff)
+    expered_delivery_profi = OrderProvedByRider.objects.filter(
+    status="PENDING",
+    order__updated_at__lt=cutofffordeleverprofe)
+
+    if expered_delivery_profi.count()>0:
+      for expered in expered_delivery_profi:
+        expered.status="CANCELED"
+        expered.save()
+
     # user গুলো delete করা
     count = unverified_users.count()
     if count > 0:
@@ -630,3 +664,29 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated,IsOwner]
     def get_queryset(self):
         return self.queryset.filter(order__user=self.request.user)
+
+
+# views.py
+from rest_framework import viewsets, permissions
+from .models import OrderProvedByRider
+from .serializers import OrderProvedByRiderSerializer
+
+
+# orderproved view
+class OrderProvedByRiderViewSet(viewsets.ModelViewSet):
+    queryset = OrderProvedByRider.objects.all()
+    serializer_class = OrderProvedByRiderSerializer
+    permission_classes = [permissions.IsAuthenticated]  # login user only
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'destroy']:
+            return [permissions.IsAdminUser()]
+        return super().get_permissions()
+    def perform_create(self, serializer):
+        serializer.save(rider=self.request.user)
+    def perform_update(self, serializer):
+        serializer.save(rider=self.request.user)
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return self.queryset
+        return self.queryset.filter(rider=user)

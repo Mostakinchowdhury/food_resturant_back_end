@@ -17,6 +17,8 @@ from pathlib import Path
 import environ
 import os
 
+
+
 from django.conf.global_settings import CSRF_TRUSTED_ORIGINS
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,14 +28,14 @@ environ.Env.read_env(BASE_DIR / ".env")
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ot#4#i@^-krs*)9+c(20zno#vhh2+ky8%m5faq%@^udc_oyz&@'
+SECRET_KEY =env("DJANGO_SECRET_KEY",)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -50,6 +52,9 @@ INSTALLED_APPS = [
     'rest_framework',
     "corsheaders",
     'rest_framework_simplejwt.token_blacklist',
+    "django_filters",
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -125,6 +130,24 @@ else:
    }
 
 
+# cloudinary set up
+# settings.py
+from cloudinary import config
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': env("CLOUDINARY_CLOUD_NAME"),
+    'API_KEY': env("CLOUDINARY_API_KEY"),
+    'API_SECRET': env("CLOUDINARY_API_SECRET"),
+}
+config(
+    cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+    api_key=CLOUDINARY_STORAGE['API_KEY'],
+    api_secret=CLOUDINARY_STORAGE['API_SECRET']
+    )
+
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# finish cloudinary set     up--------------------************-----------------
 
 AUTH_USER_MODEL = 'api.CustomUser'
 AUTHENTICATION_BACKENDS = ['api.backends.EmailBackend']
@@ -184,8 +207,6 @@ EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 
 TIME_ZONE = 'Asia/Dhaka'
 USE_TZ = True
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 from datetime import timedelta
@@ -227,7 +248,14 @@ STRIPE_WEBHOOK_ID=env("STRIPE_WEBHOOK_ID", default=None)
 
 # settings.py
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "buford-presurgical-anders.ngrok-free.dev","https://food-resturant-front-end-uvgw.vercel.app","https://food-resturant-back-end.onrender.com","food-resturant-back-end.onrender.com"]
+ALLOWED_HOSTS = [
+   "127.0.0.1",
+   "localhost",
+   "buford-presurgical-anders.ngrok-free.dev",
+   "food-resturant-front-end-uvgw.vercel.app",
+   "food-resturant-back-end.onrender.com"
+]
+
 
 CORS_ALLOW_ALL_ORIGINS = True  # সব origin allow করবে
 # অথবা চাইলে safe রাখতে পারো

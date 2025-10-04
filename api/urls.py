@@ -7,7 +7,8 @@ from .views import (
     CartItemViewSet, OrderViewSet, ProductReviewViewSet,
     RegisterView, LoginView, ChangePasswordView,
     PasswordResetRequestView, PasswordResetConfirmView, verify_register_otp, Adressviewset, Subscribersviewset,
-    PromoCodeListCreateView, ApplyPromoCodeView,SupercategoryViewSet,SSLCommerzCheckoutView,Product_imagesViewSet, payment_success,
+    PromoCodeListCreateView,
+    OrderProvedByRiderViewSet,ApplyPromoCodeView,SupercategoryViewSet,SSLCommerzCheckoutView,Product_imagesViewSet, payment_success,
     payment_fail, payment_cancel, stripe_webhook, wellcome,delete_unverified_users
 )
 from rest_framework_simplejwt.views import (
@@ -31,6 +32,7 @@ router.register("supercategory", SupercategoryViewSet, basename="supercategory")
 router.register("supercategories", SupercategoryViewSet, basename="supercategories")
 router.register("product-images", Product_imagesViewSet, basename="product-images")
 router.register("orderItems", OrderItemViewSet, basename="OrderItemViewSet")
+router.register("order-proved", OrderProvedByRiderViewSet, basename="OrderProvedByRiderViewSet")
 
 urlpatterns = [
     path("", include(router.urls)),

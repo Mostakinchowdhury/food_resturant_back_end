@@ -2,12 +2,10 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from .manager import myUserManager,CartitemManager
 from django.contrib.auth import get_user_model
-import uuid
-from os.path import join,splitext
-from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import PermissionsMixin
 from django.utils import timezone
+from cloudinary.models import CloudinaryField
 
 User=settings.AUTH_USER_MODEL
 GENDER_CHOICES = (
@@ -35,18 +33,6 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
     def __str__(self):
        return self.email
 
-# profile pic upload path
-def genaretprofilepath(instance,filename):
-    today=datetime.now()
-    year = today.strftime("%Y")
-    month = today.strftime("%m")
-    day = today.strftime("%d")
-    extension_name=splitext(filename)[1] # Get the file extension
-    # Generate a unique filename using UUID
-    uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
-    return join("profiles",year,month,day,uniqe_filename)
-
-
 # custom profile model
 class Profile(models.Model):
     user=models.OneToOneField(CustomUser,on_delete=models.CASCADE,related_name='profile',related_query_name='profile')
@@ -55,7 +41,7 @@ class Profile(models.Model):
     bio=models.TextField(max_length=320,null=True,blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='male')
     birth_date=models.DateField(null=True,blank=True)
-    profile_image=models.ImageField(upload_to=genaretprofilepath,blank=True,null=True)
+    profile_image=CloudinaryField("image",folder="profile/image",blank=True,null=True)
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}'s Profile"
 
@@ -74,21 +60,10 @@ class Setting(models.Model):
 # custom tag model
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    tag_author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tags", related_query_name="tags", null=True, blank=True,default="admin")
+    tag_author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tags", related_query_name="tags", null=True, blank=True)
     def __str__(self):
         return self.name
 
-
-# genaret uniqe category image path
-def genaretcategorypath(instance,filename):
-    today=datetime.now()
-    year = today.strftime("%Y")
-    month = today.strftime("%m")
-    day = today.strftime("%d")
-    extension_name=splitext(filename)[1] # Get the file extension
-    # Generate a unique filename using UUID
-    uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
-    return join("categories",year,month,day,uniqe_filename)
 
 
 #products super category
@@ -104,52 +79,13 @@ class Category(models.Model):
     supercategory=models.ForeignKey(Supercategory,on_delete=models.CASCADE,related_name='category',related_query_name="category",blank=True,null=True)
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to=genaretcategorypath, blank=True, null=True)
+    image = CloudinaryField("image",folder="category/images", blank=True, null=True)
     def __str__(self):
         return self.name
 
 
 # genaret uniqe product image path
 
-def genaretproductpath(instance,filename):
-    today=datetime.now()
-    year = today.strftime("%Y")
-    month = today.strftime("%m")
-    day = today.strftime("%d")
-    extension_name=splitext(filename)[1] # Get the file extension
-    # Generate a unique filename using UUID
-    uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
-    return join("products",year,month,day,uniqe_filename)
-
-def genaretRiderpath(instance,filename):
-    today=datetime.now()
-    year = today.strftime("%Y")
-    month = today.strftime("%m")
-    day = today.strftime("%d")
-    extension_name=splitext(filename)[1] # Get the file extension
-    # Generate a unique filename using UUID
-    uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
-    return join("rider_photo",year,month,day,uniqe_filename)
-
-def genaretpartnerpath(instance,filename):
-    today=datetime.now()
-    year = today.strftime("%Y")
-    month = today.strftime("%m")
-    day = today.strftime("%d")
-    extension_name=splitext(filename)[1] # Get the file extension
-    # Generate a unique filename using UUID
-    uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
-    return join("perner_photo",year,month,day,uniqe_filename)
-
-def genaretpartnerbuesnesslogopath(instance,filename):
-    today=datetime.now()
-    year = today.strftime("%Y")
-    month = today.strftime("%m")
-    day = today.strftime("%d")
-    extension_name=splitext(filename)[1] # Get the file extension
-    # Generate a unique filename using UUID
-    uniqe_filename = f"{uuid.uuid4().hex}{extension_name}" # Generate a UUID and convert to string
-    return join("perner_buesness_logo",year,month,day,uniqe_filename)
 
 
 
@@ -194,7 +130,14 @@ class Product(models.Model):
 # products images
 class Product_images(models.Model):
     product=models.ForeignKey(Product,on_delete=models.CASCADE,related_name="productimgs",related_query_name="productimgs")
-    image = models.ImageField(upload_to=genaretproductpath, blank=True, null=True)
+    file = CloudinaryField(
+        "File",
+        folder="product/media",
+        resource_type='auto',  # এখানে auto দিলে image, video, pdf, সব যায়
+        blank=True,
+        null=True
+      )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"serials:{self.pk}-{self.product.name}"
@@ -253,6 +196,10 @@ class Order(models.Model):
     currency = models.CharField(max_length=10, default="GBP")
     orderitems_string=models.TextField(blank=True, null=True)
     seller_shop=models.CharField(max_length=100,default="RBL super shop")
+    order_otp=models.CharField(max_length=6,blank=True,null=True)
+    otp_expiry=models.DateTimeField(blank=True,null=True)
+    order_rider=models.ForeignKey('ApplyRider',on_delete=models.SET_NULL,related_name="rider_orders",related_query_name="rider_orders",blank=True,null=True)
+    updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"Order {self.id} - {self.user.first_name} {self.user.last_name} ({self.status})"
 
@@ -359,9 +306,6 @@ class PromoCode(models.Model):
         return f"{self.code} ({'Unlimited' if self.max_uses == 999 else f'{self.used_count}/{self.max_uses}'})"
 
 
-    def __str__(self):
-        return self.code
-
 # PromoUsage   models
 
 class PromoUsage(models.Model):
@@ -388,11 +332,12 @@ APPLY_CHOICE = (
 
 class ApplyRider(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="rider_profile",related_query_name="rider_profile",null=True,blank=True)
+    email= models.EmailField(unique=True)
     phone_num = models.CharField(max_length=20)
     working_area_address = models.CharField(max_length=255)
     permanent_address = models.CharField(max_length=255)
-    photo = models.ImageField(upload_to=genaretRiderpath, blank=True, null=True)
+    photo = CloudinaryField("image",folder="rider/images", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=50, choices=APPLY_CHOICE, default="PENDING")
@@ -412,11 +357,24 @@ class ApplyBuesnessman(models.Model):
     business_type = models.CharField(max_length=100)
     website = models.URLField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    buesness_logo=models.ImageField(upload_to=genaretpartnerbuesnesslogopath,null=True,blank=True)
-    owner_photo=models.ImageField(upload_to=genaretpartnerpath)
+    buesness_logo=CloudinaryField("image",folder="buesnesslogo/image",null=True,blank=True)
+    owner_photo=CloudinaryField("image",folder="buesnessowner/photo",null=True,blank=True)
     status = models.CharField(max_length=50, choices=APPLY_CHOICE, default="PENDING")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.name} - {self.business_name}-{self.status}"
+
+# orders proved by a rider model
+class OrderProvedByRider(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="proved_by_rider",related_query_name="proved_by_rider")
+    rider = models.ForeignKey(ApplyRider, on_delete=models.CASCADE, related_name="delivered_orders",related_query_name="delivered_orders")
+    proved_image=models.ImageField(upload_to="order_proved")
+    # proved short video
+    proved_video=models.FileField(upload_to="order_proved_videos")
+    status = models.CharField(max_length=20, choices=APPLY_CHOICE, default="PENDING")
+    proved_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order {self.order.id} proved by {self.rider.name}-{self.status}"
