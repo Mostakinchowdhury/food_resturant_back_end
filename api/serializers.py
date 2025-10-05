@@ -51,11 +51,16 @@ class adressserializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     addresses=adressserializer(many=True,read_only=True)
     id = serializers.IntegerField()
+    profile_image = serializers.SerializerMethodField()
     class Meta:
         model = Profile
-        fields = "__all__"
+        fields = ["id",'user','phone_num','country','bio',"gender",'birth_date','profile_image','addresses']
         read_only_fields = ['user','id','addresses']
-
+    def get_profile_image(self,obj):
+        request=self.context.get("request")
+        if obj.profile_image and hasattr(obj.profile_image, 'url'):
+            return request.build_absolute_uri(obj.profile_image.url)
+        return None
 # serializer for setting model
 
 class SettingSerializer(serializers.ModelSerializer):
@@ -91,11 +96,16 @@ class ProductReviewSerializer(serializers.ModelSerializer):
 # serializer for products image
 from .models import Product_images,Supercategory
 class ProductimgsSerializer(serializers.ModelSerializer):
+    file=serializers.SerializerMethodField()
     class Meta:
         model=Product_images
-        fields="__all__"
+        fields=["id","product",'file']
         read_only_fields=['id',]
-
+    def get_file(self,obj):
+        request=self.context.get("request")
+        if obj.file and hasattr(obj.file, 'url'):
+            return request.build_absolute_uri(obj.file.url)
+        return None
 # serializer for product model
 class ProductSerializer(serializers.ModelSerializer):
     category=serializers.SlugRelatedField(slug_field="name",read_only=True)
@@ -113,10 +123,16 @@ class ProductSerializer(serializers.ModelSerializer):
 # category serializer
 
 class CategorySerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
     class Meta:
         model = Category
         fields = ["id", "name", "description","image"]
         read_only_fields = ['id',]
+        def get_image(self,obj):
+         request=self.context.get("request")
+         if obj.file and hasattr(obj.file, 'url'):
+            return request.build_absolute_uri(obj.file.url)
+         return None
 
 # Supercategory serializer
 
@@ -404,6 +420,8 @@ from .models import OrderProvedByRider, Order, ApplyRider
 
 class OrderProvedByRiderSerializer(serializers.ModelSerializer):
     rider_name = serializers.SlugRelatedField(source='rider', slug_field='name', read_only=True)
+    proved_image = serializers.SerializerMethodField()
+    proved_video = serializers.SerializerMethodField()
     class Meta:
         model = OrderProvedByRider
         fields = [
@@ -417,4 +435,14 @@ class OrderProvedByRiderSerializer(serializers.ModelSerializer):
             'proved_at'
         ]
         read_only_fields = ['proved_at']  # proved_at auto_now_add
+    def get_proved_image(self, obj):
+        request = self.context.get("request")
+        if obj.proved_image and hasattr(obj.proved_image, 'url'):
+            return request.build_absolute_uri(obj.proved_image.url)
+        return None
+    def get_proved_video(self, obj):
+        request = self.context.get("request")
+        if obj.proved_video and hasattr(obj.proved_video, 'url'):
+            return request.build_absolute_uri(obj.proved_video.url)
+        return None
 
