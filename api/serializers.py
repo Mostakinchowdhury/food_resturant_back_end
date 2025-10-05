@@ -59,7 +59,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_profile_image(self,obj):
         request=self.context.get("request")
         if obj.profile_image and hasattr(obj.profile_image, 'url'):
-            return request.build_absolute_uri(obj.profile_image.url)
+            return obj.profile_image.url
         return None
 # serializer for setting model
 
@@ -104,7 +104,7 @@ class ProductimgsSerializer(serializers.ModelSerializer):
     def get_file(self,obj):
         request=self.context.get("request")
         if obj.file and hasattr(obj.file, 'url'):
-            return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
         return None
 # serializer for product model
 class ProductSerializer(serializers.ModelSerializer):
@@ -131,7 +131,7 @@ class CategorySerializer(serializers.ModelSerializer):
     def get_image(self,obj):
       request=self.context.get("request")
       if obj.image and hasattr(obj.image, 'url'):
-            return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
       return None
 
 # Supercategory serializer
@@ -438,11 +438,11 @@ class OrderProvedByRiderSerializer(serializers.ModelSerializer):
     def get_proved_image(self, obj):
         request = self.context.get("request")
         if obj.proved_image and hasattr(obj.proved_image, 'url'):
-            return request.build_absolute_uri(obj.proved_image.url)
+            return obj.proved_image.url
         return None
     def get_proved_video(self, obj):
         request = self.context.get("request")
         if obj.proved_video and hasattr(obj.proved_video, 'url'):
-            return request.build_absolute_uri(obj.proved_video.url)
+            return obj.proved_video.url
         return None
 
