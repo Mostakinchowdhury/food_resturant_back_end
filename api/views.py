@@ -608,6 +608,9 @@ class ApplyRiderViewSet(viewsets.ModelViewSet):
     queryset = ApplyRider.objects.all()
     serializer_class = ApplyRiderSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['name', 'working_area_address','phone_num']
+    ordering=['-created_at']
 
 # ApplyBuesnessman ViewSet
 class ApplyBuesnessmanViewSet(viewsets.ModelViewSet):

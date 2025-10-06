@@ -376,11 +376,16 @@ from .models import ApplyRider,ApplyBuesnessman
 
 # Serializer for ApplyRider model
 class ApplyRiderSerializer(serializers.ModelSerializer):
+    photo=serializers.SerializerMethodField()
     class Meta:
         model = ApplyRider
         fields = "__all__"
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    def get_photo(self,obj):
+        if obj.photo and hasattr(obj.photo, 'url'):
+            return obj.photo.url
+        return None
 # Serializer for ApplyBuesnessman model
 class ApplyBuesnessmanSerializer(serializers.ModelSerializer):
     buesness_logo=serializers.SerializerMethodField()
