@@ -383,10 +383,24 @@ class ApplyRiderSerializer(serializers.ModelSerializer):
 
 # Serializer for ApplyBuesnessman model
 class ApplyBuesnessmanSerializer(serializers.ModelSerializer):
+    buesness_logo=serializers.SerializerMethodField()
+    owner_photo=serializers.SerializerMethodField()
     class Meta:
         model = ApplyBuesnessman
         fields = "__all__"
         read_only_fields = ['id', 'created_at', 'updated_at']
+    def get_buesness_logo(self,obj):
+        # cloudinary image fetch url
+        request=self.context.get("request")
+        if obj.buesness_logo and hasattr(obj.buesness_logo, 'url'):
+            return obj.buesness_logo.url
+        return None
+
+    def get_owner_photo(self,obj):
+        request=self.context.get("request")
+        if obj.owner_photo and hasattr(obj.owner_photo, 'url'):
+            return obj.owner_photo.url
+        return None
 
 
 

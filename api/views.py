@@ -54,6 +54,10 @@ class ProfileViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
     get_queryset = lambda self: self.queryset.filter(user=self.request.user)
+    def partial_update(self, request, *args, **kwargs):
+     kwargs['partial'] = True
+     return super().update(request, *args, **kwargs)
+
 
 # 🔹 Setting ViewSet
 class SettingViewSet(viewsets.ModelViewSet):
@@ -610,6 +614,10 @@ class ApplyBuesnessmanViewSet(viewsets.ModelViewSet):
     queryset = ApplyBuesnessman.objects.all()
     serializer_class = ApplyBuesnessmanSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['name', 'business_address','business_name']
+    ordering=['-created_at']
+
 
 # wellcome view
 
