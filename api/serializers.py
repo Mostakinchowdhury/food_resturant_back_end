@@ -51,12 +51,12 @@ class adressserializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     addresses=adressserializer(many=True,read_only=True)
     id = serializers.IntegerField()
-    profile_image = serializers.SerializerMethodField()
+    profile_imag = serializers.SerializerMethodField()
     class Meta:
         model = Profile
-        fields = ["id",'user','phone_num','country','bio',"gender",'birth_date','profile_image','addresses']
+        fields = ["id",'user','phone_num','country','bio',"gender",'birth_date','profile_image',"profile_imag",'addresses']
         read_only_fields = ['user','id','addresses']
-    def get_profile_image(self,obj):
+    def get_profile_imag(self,obj):
         request=self.context.get("request")
         if obj.profile_image and hasattr(obj.profile_image, 'url'):
             return obj.profile_image.url
@@ -96,13 +96,12 @@ class ProductReviewSerializer(serializers.ModelSerializer):
 # serializer for products image
 from .models import Product_images,Supercategory
 class ProductimgsSerializer(serializers.ModelSerializer):
-    file=serializers.SerializerMethodField()
+    file_url=serializers.SerializerMethodField()
     class Meta:
         model=Product_images
-        fields=["id","product",'file']
+        fields=["id","product",'file','file_url']
         read_only_fields=['id',]
-    def get_file(self,obj):
-        request=self.context.get("request")
+    def get_file_url(self,obj):
         if obj.file and hasattr(obj.file, 'url'):
             return obj.file.url
         return None
@@ -123,13 +122,12 @@ class ProductSerializer(serializers.ModelSerializer):
 # category serializer
 
 class CategorySerializer(serializers.ModelSerializer):
-    image=serializers.SerializerMethodField()
+    image_url=serializers.SerializerMethodField()
     class Meta:
         model = Category
-        fields = ["id", "name", "description","image"]
+        fields = ["id", "name", "description","image",'image_url']
         read_only_fields = ['id',]
-    def get_image(self,obj):
-      request=self.context.get("request")
+    def get_image_url(self,obj):
       if obj.image and hasattr(obj.image, 'url'):
             return obj.image.url
       return None
@@ -376,33 +374,62 @@ from .models import ApplyRider,ApplyBuesnessman
 
 # Serializer for ApplyRider model
 class ApplyRiderSerializer(serializers.ModelSerializer):
-    photo=serializers.SerializerMethodField()
+    photo_url=serializers.SerializerMethodField()
     class Meta:
         model = ApplyRider
-        fields = "__all__"
+        fields = [
+            'id',
+            'name',
+            'user',
+            'email',
+            'phone_num',
+            'working_area_address',
+            'permanent_address',
+            'photo',
+            'photo_url',
+            'created_at',
+            'updated_at',
+            'status',
+        ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
-    def get_photo(self,obj):
+    def get_photo_url(self,obj):
         if obj.photo and hasattr(obj.photo, 'url'):
             return obj.photo.url
         return None
 # Serializer for ApplyBuesnessman model
 class ApplyBuesnessmanSerializer(serializers.ModelSerializer):
-    buesness_logo=serializers.SerializerMethodField()
-    owner_photo=serializers.SerializerMethodField()
+    buesness_logo_url=serializers.SerializerMethodField()
+    owner_photo_url=serializers.SerializerMethodField()
     class Meta:
         model = ApplyBuesnessman
-        fields = "__all__"
+        fields = [
+            'id',
+            'name',
+            'email',
+            'phone_num',
+            'business_name',
+            'business_address',
+            'business_type',
+            'website',
+            'description',
+            'buesness_logo',
+            'buesness_logo_url',
+            'owner_photo_url',
+            'owner_photo',
+            'status',
+            'created_at',
+            'updated_at',
+        ]
         read_only_fields = ['id', 'created_at', 'updated_at']
-    def get_buesness_logo(self,obj):
+    def get_buesness_logo_url(self,obj):
         # cloudinary image fetch url
         request=self.context.get("request")
         if obj.buesness_logo and hasattr(obj.buesness_logo, 'url'):
             return obj.buesness_logo.url
         return None
 
-    def get_owner_photo(self,obj):
-        request=self.context.get("request")
+    def get_owner_photo_url(self,obj):
         if obj.owner_photo and hasattr(obj.owner_photo, 'url'):
             return obj.owner_photo.url
         return None
@@ -439,8 +466,8 @@ from .models import OrderProvedByRider, Order, ApplyRider
 
 class OrderProvedByRiderSerializer(serializers.ModelSerializer):
     rider_name = serializers.SlugRelatedField(source='rider', slug_field='name', read_only=True)
-    proved_image = serializers.SerializerMethodField()
-    proved_video = serializers.SerializerMethodField()
+    proved_image_url = serializers.SerializerMethodField()
+    proved_video_url = serializers.SerializerMethodField()
     class Meta:
         model = OrderProvedByRider
         fields = [
@@ -449,18 +476,18 @@ class OrderProvedByRiderSerializer(serializers.ModelSerializer):
             'rider',
             'rider_name',
             'proved_image',
+            'proved_image_url',
             'proved_video',
+            'proved_video_url',
             'status',
             'proved_at'
         ]
         read_only_fields = ['proved_at']  # proved_at auto_now_add
-    def get_proved_image(self, obj):
-        request = self.context.get("request")
+    def get_proved_image_url(self, obj):
         if obj.proved_image and hasattr(obj.proved_image, 'url'):
             return obj.proved_image.url
         return None
-    def get_proved_video(self, obj):
-        request = self.context.get("request")
+    def get_proved_video_url(self, obj):
         if obj.proved_video and hasattr(obj.proved_video, 'url'):
             return obj.proved_video.url
         return None
