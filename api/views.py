@@ -214,8 +214,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                 "quantity": item.quantity,
             } for item in order.cart.items.checked_items()],
             mode="payment",
-            success_url="http://localhost:3000/success",
-            cancel_url="http://localhost:3000/cancel",
+            success_url=f"{settings.FRONTEND_URL}success",
+            cancel_url=f"{settings.FRONTEND_URL}cancel",
             metadata={"order_id": str(order.id)},
         )
         cheakeditems=CartItem.objects.checked_items()
@@ -249,7 +249,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                 order=cash_order,
                 product=item.product,
                 quantity=item.quantity,
-                price=item.product.price)
+                price=item.product.price
+                )
             item.delete()
         serializer = self.get_serializer(cash_order)
         return Response({'messages':"Order succesfully placed",'result':serializer.data}, status=status.HTTP_201_CREATED)
@@ -377,8 +378,8 @@ class verify_register_otp(APIView):
            user.save()
            Thread(target=send_welcome_email, args=[user]).start()
            token=get_tokens_for_user(user)
-           Profile.objects.create(user=user)
-           Setting.objects.create(user=user)
+           Profile.objects.get_or_create(user=user)
+           Setting.objects.get_or_create(user=user)
            return Response({"message": "Email verified successfully",'tokens':token}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid or expired OTP. Click the Resend OTP button to try again."}, status=status.HTTP_400_BAD_REQUEST)
@@ -511,11 +512,11 @@ class SSLCommerzCheckoutView(APIView):
             'success_url': "http://127.0.0.1:8000/api/payment/success/",
             'fail_url': "http://127.0.0.1:8000/api/payment/fail/",
             'cancel_url': "http://127.0.0.1:8000/api/payment/cancel/",
-            'cus_name': "Test User",
-            'cus_email': "test@test.com",
-            'cus_phone': "01700000000",
-            'cus_add1': "Dhaka",
-            'cus_country': "Bangladesh",
+            'cus_name': f"{order.user.first_name} {order.user.last_name}",
+            'cus_email': order.user.email,
+            'cus_phone': order.phone,
+            'cus_add1': order.address,
+            'cus_country': order.address,
             'product_name': "demo",
             'cus_city':"dhaka",
             'product_category': "General",
