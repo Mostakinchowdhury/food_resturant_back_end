@@ -255,8 +255,10 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(cash_order)
         return Response({'messages':"Order succesfully placed",'result':serializer.data}, status=status.HTTP_201_CREATED)
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get"],url_name='ispercheased',url_path='ispercheased')
     def Ispercheased(self, request):
+         if not request.user.is_authenticated:
+                return Response({"error": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
          product_id = request.GET.get("product_id")
          if not product_id:
              return Response({"error": "Product ID is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -289,13 +291,24 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Response({"message": "A new OTP has been sent to your email. Check it and fill in the OTP input."}, status=status.HTTP_200_OK)
 # 🔹 ProductReview ViewSet
 class ProductReviewViewSet(viewsets.ModelViewSet):
-    queryset = ProductReview.objects.all()
+    queryset = ProductReview.objects.all().order_by('-created_at')
     serializer_class = ProductReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
+
+    # new action for the product's review's
+    @action(detail=False, methods=["GET"],url_name="product",url_path="product")
+    def product_review(self, request):
+        product_id=request.query_params.get("product_id",None)
+        if product_id is None:
+            raise ValidationError("products id required")
+        result=self.serializer_class(self.queryset.filter(product=product_id).order_by("-created_at"),many=True).data
+        return Response(result)
+
+
 
 # 🔹 Registration
 class RegisterView(APIView):
@@ -702,3 +715,30 @@ class OrderProvedByRiderViewSet(viewsets.ModelViewSet):
         if user.is_staff or user.is_superuser:
             return self.queryset
         return self.queryset.filter(rider=user)
+
+
+# rating view
+from api.models import ProductRating
+from api.srilaijar import ProductretingSerializer
+from rest_framework.serializers import ValidationError
+class ProductRatingViewSet(viewsets.ModelViewSet):
+    queryset = ProductRating.objects.all()
+    serializer_class = ProductretingSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    def perform_create(self, serializer):
+        if ProductRating.objects.filter(user=self.request.user,product=serializer.validated_data['product']).exists():
+            raise ValidationError("You have already rated this product.")
+        if not self.request.user.is_authenticated:
+            raise ValidationError("You must be logged in to rate a product.")
+        serializer.save(user=self.request.user)
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+from rest_framework.serializers import ValidationError
+from rest_framework.decorators import api_view
+@api_view()
+def fetchuserid(request):
+    if not request.user.is_authenticated:
+        raise ValidationError("You are not our member")
+    return Response({"user_id":request.user.id})

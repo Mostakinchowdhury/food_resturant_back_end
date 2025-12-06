@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.contrib.auth.models import PermissionsMixin
 from django.utils import timezone
-from cloudinary.models import CloudinaryField
+from .lib import generate_file_path
 
 User=settings.AUTH_USER_MODEL
 GENDER_CHOICES = (
@@ -41,7 +41,7 @@ class Profile(models.Model):
     bio=models.TextField(max_length=320,null=True,blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='male')
     birth_date=models.DateField(null=True,blank=True)
-    profile_image=CloudinaryField("image",folder="profile/image",blank=True,null=True)
+    profile_image=models.ImageField(upload_to="profile",blank=True,null=True)
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}'s Profile"
 
@@ -60,26 +60,26 @@ class Setting(models.Model):
 # custom tag model
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    tag_author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tags", related_query_name="tags", null=True, blank=True)
+    tag_author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="tags", related_query_name="tags", null=True, blank=True)
     def __str__(self):
         return self.name
-
 
 
 #products super category
 
 class Supercategory(models.Model):
+    author=models.ForeignKey(CustomUser,on_delete=models.CASCADE,related_name="supercategories",related_query_name="supercategories",null=True,blank=True)
     title=models.CharField(max_length=100,unique=True)
-
     def __str__(self):
         return self.title
 
 #product category model
 class Category(models.Model):
+    author=models.ForeignKey(User,on_delete=models.CASCADE,related_name="categories",related_query_name="categories",null=True,blank=True)
     supercategory=models.ForeignKey(Supercategory,on_delete=models.CASCADE,related_name='category',related_query_name="category",blank=True,null=True)
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
-    image = CloudinaryField("image",folder="category/images", blank=True, null=True)
+    image = models.ImageField(upload_to="categories", blank=True, null=True)
     def __str__(self):
         return self.name
 
@@ -89,9 +89,9 @@ class Category(models.Model):
 
 
 
-
 # custom product model
 class Product(models.Model):
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="products", related_query_name="products", null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="products",related_query_name="products")
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
@@ -130,10 +130,8 @@ class Product(models.Model):
 # products images
 class Product_images(models.Model):
     product=models.ForeignKey(Product,on_delete=models.CASCADE,related_name="productimgs",related_query_name="productimgs")
-    file = CloudinaryField(
-        "File",
-        folder="product/media",
-        resource_type='auto',  # এখানে auto দিলে image, video, pdf, সব যায়
+    file = models.FileField(
+        upload_to="products",
         blank=True,
         null=True
       )
@@ -145,7 +143,7 @@ class Product_images(models.Model):
 
 # custom cart model
 class Cart(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart",related_query_name="cart")
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="cart",related_query_name="cart")
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
 
@@ -185,7 +183,7 @@ class Order(models.Model):
         ("DELIVERED", "Delivered"),
         ("CANCELLED", "Cancelled"),
         )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders",related_query_name="orders")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="orders",related_query_name="orders")
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE,related_name="order",related_query_name='order')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
     address = models.CharField(max_length=255)
@@ -211,7 +209,7 @@ class Order(models.Model):
 # order item model
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="orderitems",related_query_name="orderitems")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE,related_name="orderitem",related_query_name="orderitem")
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     added_at = models.DateTimeField(auto_now_add=True)
@@ -225,8 +223,7 @@ class OrderItem(models.Model):
 # custom product revew model
 class ProductReview(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews",related_query_name="reviews")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews",related_query_name="reviews")
-    rating = models.PositiveIntegerField()  # 1 থেকে 5 পর্যন্ত
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="reviews",related_query_name="reviews")
     comment = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -234,6 +231,15 @@ class ProductReview(models.Model):
     def __str__(self):
         return f"Review by {self.user.first_name} {self.user.last_name} for {self.product.name}"
 
+class ProductRating(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="ratings",related_query_name="ratings")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="ratings",related_query_name="ratings")
+    rating = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Rating by {self.user.first_name} {self.user.last_name} for {self.product.name}: {self.rating}"
 
 class subscribers(models.Model):
     email = models.EmailField()
@@ -337,7 +343,7 @@ class ApplyRider(models.Model):
     phone_num = models.CharField(max_length=20)
     working_area_address = models.CharField(max_length=255)
     permanent_address = models.CharField(max_length=255)
-    photo = CloudinaryField("image",folder="rider/images", blank=True, null=True)
+    photo = models.ImageField(upload_to="rider/images", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=50, choices=APPLY_CHOICE, default="PENDING")
@@ -349,6 +355,7 @@ class ApplyRider(models.Model):
 # appy as a buessness owner
 
 class ApplyBuesnessman(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="partner",related_query_name="partner",null=True,blank=True)
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     phone_num = models.CharField(max_length=20)
@@ -357,8 +364,9 @@ class ApplyBuesnessman(models.Model):
     business_type = models.CharField(max_length=100)
     website = models.URLField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    buesness_logo=CloudinaryField("image",folder="buesnesslogo/image",null=True,blank=True)
-    owner_photo=CloudinaryField("image",folder="buesnessowner/photo",null=True,blank=True)
+    buesness_logo=models.ImageField(upload_to='buesnesslogo/image',null=True,blank=True)
+    owner_photo=models.ImageField(
+        upload_to="buesnessowner/photo")
     status = models.CharField(max_length=50, choices=APPLY_CHOICE, default="PENDING")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -370,9 +378,9 @@ class ApplyBuesnessman(models.Model):
 class OrderProvedByRider(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="proved_by_rider",related_query_name="proved_by_rider")
     rider = models.ForeignKey(ApplyRider, on_delete=models.CASCADE, related_name="delivered_orders",related_query_name="delivered_orders")
-    proved_image=models.ImageField(upload_to="order_proved")
+    proved_image=models.ImageField(upload_to="order_proved_images")
     # proved short video
-    proved_video=models.FileField(upload_to="order_proved_videos")
+    proved_video=models.FileField("order_proved_videos")
     status = models.CharField(max_length=20, choices=APPLY_CHOICE, default="PENDING")
     proved_at = models.DateTimeField(auto_now_add=True)
 

@@ -43,6 +43,7 @@ SECRET_KEY =env("DJANGO_SECRET_KEY",)
 
 INSTALLED_APPS = [
     "api",
+    "overview",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -101,30 +102,33 @@ WSGI_APPLICATION = 'food_resturant_back_end.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 DEBUG = env("DEBUG",default="True") == "True"
-
 if DEBUG:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
+            'ENGINE': 'django.db.backends.mysql',
             'NAME': env("LOCAL_DB_NAME"),
             'USER': env("LOCAL_DB_USER"),
             'PASSWORD': env("LOCAL_DB_PASSWORD"),
             'HOST': env("LOCAL_DB_HOST"),
             'PORT': env("LOCAL_DB_PORT"),
+            'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
         }
     }
 else:
     DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django.db.backends.mysql",
         "NAME": env("DB_NAME"),
         "USER": env("DB_USER"),
         "PASSWORD": env("DB_PASSWORD"),
         "HOST": env("DB_HOST", default="127.0.0.1"),
-        "PORT": env("DB_PORT", default="5432"),
+        "PORT": env("DB_PORT", default="3306"),
         "CONN_MAX_AGE": env.int("CONN_MAX_AGE", default=60),
         'OPTIONS': {
             'sslmode': 'require',   # Render DB requires SSL
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
    }
@@ -255,7 +259,11 @@ ALLOWED_HOSTS = [
    "localhost",
    "buford-presurgical-anders.ngrok-free.dev",
    "food-resturant-front-end-uvgw.vercel.app",
-   "food-resturant-back-end.onrender.com"
+   "food-resturant-back-end.onrender.com",
+   "backend.dayfey.store",
+   "www.backend.dayfey.store",
+   "dayfey.store",
+   "www.dayfey.store"
 ]
 
 
@@ -279,3 +287,8 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+

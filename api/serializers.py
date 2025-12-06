@@ -57,10 +57,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ["id",'user','phone_num','country','bio',"gender",'birth_date','profile_image',"profile_imag",'addresses']
         read_only_fields = ['user','id','addresses']
     def get_profile_imag(self,obj):
-        request=self.context.get("request")
-        if obj.profile_image and hasattr(obj.profile_image, 'url'):
-            return obj.profile_image.url
-        return None
+        request=self.context.get("request",None)
+        if request is None:
+            return None
+        return request.build_absolute_uri(obj.profile_image.url) if obj.profile_image else None
 # serializer for setting model
 
 class SettingSerializer(serializers.ModelSerializer):
@@ -83,14 +83,17 @@ class TagSerializer(serializers.ModelSerializer):
 #serializer for category model
 
 # Product review serializer
+from .models import ProductRating
 class ProductReviewSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(slug_field="email", read_only=True)
-    product = serializers.SlugRelatedField(slug_field="name", read_only=True)
+    user_email = serializers.SlugRelatedField(slug_field="email", read_only=True,source="user")
+    product_name = serializers.SlugRelatedField(slug_field="name", read_only=True,source="product")
+    rated=serializers.SerializerMethodField()
     class Meta:
         model = ProductReview
-        fields = ['id', 'product', 'user', 'rating', 'comment', 'created_at','updated_at']
-        read_only_fields = ['id', 'product', 'user', 'created_at','updated_at']
-
+        fields = ['id', 'product',"product_name",'user',"user_email",'comment','rated', 'created_at','updated_at']
+        read_only_fields = ['id', 'product_name', 'user',"user_email",'created_at','rated','updated_at']
+    def get_rated(self,obj):
+        return ProductRating.objects.filter(product=obj.product,user=obj.user).first().rating if ProductRating.objects.filter(product=obj.product,user=obj.user).exists() else 0
 
 
 # serializer for products image
@@ -102,9 +105,10 @@ class ProductimgsSerializer(serializers.ModelSerializer):
         fields=["id","product",'file','file_url']
         read_only_fields=['id',]
     def get_file_url(self,obj):
-        if obj.file and hasattr(obj.file, 'url'):
-            return obj.file.url
-        return None
+        request=self.context.get("request",None)
+        if request is None:
+            return None
+        return request.build_absolute_uri(obj.file.url) if obj.file else None
 # serializer for product model
 class ProductSerializer(serializers.ModelSerializer):
     category=serializers.SlugRelatedField(slug_field="name",read_only=True)
@@ -122,16 +126,16 @@ class ProductSerializer(serializers.ModelSerializer):
 # category serializer
 
 class CategorySerializer(serializers.ModelSerializer):
-    image_url=serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
     class Meta:
         model = Category
-        fields = ["id", "name", "description","image",'image_url']
+        fields = ["id", "name", "description","image","image_url"]
         read_only_fields = ['id',]
-    def get_image_url(self,obj):
-      if obj.image and hasattr(obj.image, 'url'):
-            return obj.image.url
-      return None
-
+    def get_image_url(self, obj):
+        request = self.context.get("request", None)
+        if request is None:
+            return None
+        return request.build_absolute_uri(obj.image.url) if obj.image else None
 # Supercategory serializer
 
 class SupercategorySerializer(serializers.ModelSerializer):
@@ -374,7 +378,7 @@ from .models import ApplyRider,ApplyBuesnessman
 
 # Serializer for ApplyRider model
 class ApplyRiderSerializer(serializers.ModelSerializer):
-    photo_url=serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField()
     class Meta:
         model = ApplyRider
         fields = [
@@ -392,15 +396,15 @@ class ApplyRiderSerializer(serializers.ModelSerializer):
             'status',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
-
-    def get_photo_url(self,obj):
-        if obj.photo and hasattr(obj.photo, 'url'):
-            return obj.photo.url
-        return None
+    def get_photo_url(self, obj):
+        request = self.context.get("request", None)
+        if request is None:
+            return None
+        return request.build_absolute_uri(obj.photo.url) if obj.photo else None
 # Serializer for ApplyBuesnessman model
 class ApplyBuesnessmanSerializer(serializers.ModelSerializer):
-    buesness_logo_url=serializers.SerializerMethodField()
-    owner_photo_url=serializers.SerializerMethodField()
+    buesness_logo_url = serializers.SerializerMethodField()
+    owner_photo_url = serializers.SerializerMethodField()
     class Meta:
         model = ApplyBuesnessman
         fields = [
@@ -415,28 +419,23 @@ class ApplyBuesnessmanSerializer(serializers.ModelSerializer):
             'description',
             'buesness_logo',
             'buesness_logo_url',
-            'owner_photo_url',
             'owner_photo',
+            'owner_photo_url',
             'status',
             'created_at',
             'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
-    def get_buesness_logo_url(self,obj):
-        # cloudinary image fetch url
-        request=self.context.get("request")
-        if obj.buesness_logo and hasattr(obj.buesness_logo, 'url'):
-            return obj.buesness_logo.url
-        return None
-
-    def get_owner_photo_url(self,obj):
-        if obj.owner_photo and hasattr(obj.owner_photo, 'url'):
-            return obj.owner_photo.url
-        return None
-
-
-
-
+    def get_buesness_logo_url(self, obj):
+        request = self.context.get("request", None)
+        if request is None:
+            return None
+        return request.build_absolute_uri(obj.buesness_logo.url) if obj.buesness_logo else None
+    def get_owner_photo_url(self, obj):
+        request = self.context.get("request", None)
+        if request is None:
+            return None
+        return request.build_absolute_uri(obj.owner_photo.url) if obj.owner_photo else None
 
 # serializer class for orderitem model
 from rest_framework import serializers
@@ -476,19 +475,21 @@ class OrderProvedByRiderSerializer(serializers.ModelSerializer):
             'rider',
             'rider_name',
             'proved_image',
-            'proved_image_url',
+            "proved_video_url",
+            "proved_image_url",
             'proved_video',
-            'proved_video_url',
             'status',
             'proved_at'
         ]
         read_only_fields = ['proved_at']  # proved_at auto_now_add
     def get_proved_image_url(self, obj):
-        if obj.proved_image and hasattr(obj.proved_image, 'url'):
-            return obj.proved_image.url
-        return None
+        request = self.context.get("request", None)
+        if request is None:
+            return None
+        return request.build_absolute_uri(obj.proved_image.url) if obj.proved_image else None
     def get_proved_video_url(self, obj):
-        if obj.proved_video and hasattr(obj.proved_video, 'url'):
-            return obj.proved_video.url
-        return None
+        request = self.context.get("request", None)
+        if request is None:
+            return None
+        return request.build_absolute_uri(obj.proved_video.url) if obj.proved_video else None
 

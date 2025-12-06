@@ -7,9 +7,9 @@ from .views import (
     CartItemViewSet, OrderViewSet, ProductReviewViewSet,
     RegisterView, LoginView, ChangePasswordView,
     PasswordResetRequestView, PasswordResetConfirmView, verify_register_otp, Adressviewset, Subscribersviewset,
-    PromoCodeListCreateView,
+    PromoCodeListCreateView,ProductRatingViewSet,
     OrderProvedByRiderViewSet,ApplyPromoCodeView,SupercategoryViewSet,SSLCommerzCheckoutView,Product_imagesViewSet, payment_success,ApplyRiderViewSet,
-    payment_fail, payment_cancel, stripe_webhook, wellcome,delete_unverified_users,ApplyBuesnessmanViewSet
+    payment_fail, payment_cancel, stripe_webhook, wellcome,delete_unverified_users,ApplyBuesnessmanViewSet,fetchuserid
 )
 from rest_framework_simplejwt.views import (
      TokenRefreshView,TokenBlacklistView,TokenVerifyView
@@ -35,6 +35,7 @@ router.register("orderItems", OrderItemViewSet, basename="OrderItemViewSet")
 router.register("order-proved", OrderProvedByRiderViewSet, basename="OrderProvedByRiderViewSet")
 router.register("shops", ApplyBuesnessmanViewSet, basename="shops")
 router.register("riders", ApplyRiderViewSet, basename="riders")
+router.register("productrating", ProductRatingViewSet, basename="productrating")
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -42,7 +43,6 @@ urlpatterns = [
     path("auth/register/", RegisterView.as_view(), name="register"),
     path("auth/login/", LoginView.as_view(), name="login"),
     path("auth/change-password/", ChangePasswordView.as_view(), name="change-password"),
-
     # Password reset
     path("auth/request-reset-password/", PasswordResetRequestView.as_view(), name="request-reset-password"),
     path("auth/reset-password-confirm/", PasswordResetConfirmView.as_view(), name="reset-password-confirm"),
@@ -59,6 +59,7 @@ urlpatterns = [
     path('stripe_webhook/',stripe_webhook),
     path('wellcome/',wellcome),
     # crone job
-    path("cronejob/delete_unverified_users/",delete_unverified_users)
+    path("cronejob/delete_unverified_users/",delete_unverified_users),
+    path("fui/",fetchuserid,name="fui")
 ]
 
